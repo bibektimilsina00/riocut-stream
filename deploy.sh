@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ===================================================================
-#   EGFilm monorepo deploy — egfilm + egsport + egtv on shared Postgres.
+#   Riocut monorepo deploy — movies + sports + tv on shared Postgres.
 #   Pulls fresh images, runs prisma migrate, brings up all apps,
 #   smoke-tests /api/health. Postgres volume is preserved.
 # ===================================================================
 set -Eeuo pipefail
 
-cd ~/egfilm
+cd ~/riocut
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; NC='\033[0m'
-APPS=(egfilm egsport egtv egblog egadmin)
+APPS=(movies sports tv blog admin)
 
 log()  { echo -e "\n${GREEN}▶${NC} $*"; }
 warn() { echo -e "${YELLOW}⚠ $*${NC}"; }
@@ -29,11 +29,11 @@ if [[ -n "${DEPLOY_APPS:-}" ]]; then
     read -r -a APPS <<< "$DEPLOY_APPS"
 fi
 log "Deploying apps: ${APPS[*]}"
-echo "  egfilm  → ${EGFILM_IMAGE_NAME:-<unset>}"
-echo "  egsport → ${EGSPORT_IMAGE_NAME:-<unset>}"
-echo "  egtv    → ${EGTV_IMAGE_NAME:-<unset>}"
-echo "  egblog  → ${EGBLOG_IMAGE_NAME:-<unset>}"
-echo "  egadmin → ${EGADMIN_IMAGE_NAME:-<unset>}"
+echo "  movies  → ${RIOCUT_IMAGE_NAME:-<unset>}"
+echo "  sports → ${RIOCUT_SPORTS_IMAGE_NAME:-<unset>}"
+echo "  tv    → ${RIOCUT_TV_IMAGE_NAME:-<unset>}"
+echo "  blog  → ${RIOCUT_BLOG_IMAGE_NAME:-<unset>}"
+echo "  admin → ${RIOCUT_ADMIN_IMAGE_NAME:-<unset>}"
 
 # ---------- disk hygiene -------------------------------------------
 # Free space BEFORE pulling so registry pull doesn't run out of disk.
@@ -81,8 +81,26 @@ else
     fail "postgres did not become healthy in 120s"
 fi
 
+ensure_image() {
+    local app=$1
+    if [[ "${BUILD_LOCAL:-}" == "true" ]]; then
+        log "Building image locally for ${app}"
+        docker compose build "$app" && return 0
+    fi
+    for i in 1 2 3 4 5; do
+        if docker compose pull "$app" 2>/dev/null; then
+            return 0
+        fi
+        warn "pull ${app} failed (${i}/5) — retry in 5s"
+        sleep 5
+    done
+    log "Pull failed or non-existent — building ${app} locally on host architecture"
+    docker compose build "$app" && return 0
+    fail "could not pull or build image for ${app}"
+}
+
 # ---------- prisma migrate (shared schema) -------------------------
-# Use the *current* egfilm image (pre-deploy) as runner. Pin prisma@6
+# Use the *current* movies image (pre-deploy) as runner. Pin prisma@6
 # (Prisma 7 dropped env() syntax). Migration runs once against shared DB
 # before we start replacing app containers — same behaviour for all apps.
 # Runner = first app being deployed; every app image bundles packages/db, and
@@ -90,6 +108,7 @@ fi
 # live in packages/db (shared) which rebuilds all apps, so migrations are always
 # present in the runner. When only an app changed, there is nothing to migrate.
 log "Running prisma migrate deploy (runner: ${APPS[0]})"
+ensure_image "${APPS[0]}"
 docker compose run --rm --remove-orphans "${APPS[0]}" sh -c \
     'cd packages/db && npx --yes prisma@6.17.1 migrate deploy --schema=./prisma/schema.prisma' \
     || warn "prisma migrate failed — continuing (manual fix may be needed)"
@@ -99,24 +118,15 @@ docker compose run --rm --remove-orphans "${APPS[0]}" sh -c \
 # so we do it one app at a time. Stopping the old container first frees
 # the old image for pruning, which makes room for the new pull. Per-app
 # blip ~30-60s (pull + start); other 4 apps keep serving meanwhile.
-pull_with_retry() {
-    local app=$1
-    for i in 1 2 3 4 5; do
-        docker compose pull "$app" && return 0
-        warn "pull ${app} failed (${i}/5) — retry in 5s"
-        sleep 5
-    done
-    fail "could not pull image for ${app}"
-}
 
-log "Rolling per-app replace (frees old image before pulling new)"
+log "Rolling per-app replace (frees old image before updating new)"
 for app in "${APPS[@]}"; do
     echo "  → ${app}"
     docker compose stop "$app" 2>/dev/null || true
     docker compose rm -f "$app" 2>/dev/null || true
     # Prune now: previous image of THIS app has no container → reclaimable.
     docker image prune -af >/dev/null 2>&1 || true
-    pull_with_retry "$app"
+    ensure_image "$app"
     docker compose up -d --wait --remove-orphans "$app"
 done
 
@@ -133,11 +143,11 @@ check_health() {
 }
 # Only health-check the apps we (re)deployed; the others were never touched.
 declare -A APP_PORT=(
-    [egfilm]="${EGFILM_PORT:-8000}"
-    [egsport]="${EGSPORT_PORT:-5555}"
-    [egtv]="${EGTV_PORT:-3333}"
-    [egblog]="${EGBLOG_PORT:-4444}"
-    [egadmin]="${EGADMIN_PORT:-5566}"
+    [movies]="${RIOCUT_PORT:-8000}"
+    [sports]="${RIOCUT_SPORTS_PORT:-5555}"
+    [tv]="${RIOCUT_TV_PORT:-3333}"
+    [blog]="${RIOCUT_BLOG_PORT:-4444}"
+    [admin]="${RIOCUT_ADMIN_PORT:-5566}"
 )
 for app in "${APPS[@]}"; do
     check_health "${APP_PORT[$app]}" "$app"

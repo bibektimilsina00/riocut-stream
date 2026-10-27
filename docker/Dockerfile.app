@@ -1,9 +1,9 @@
 # Monorepo-aware multi-stage Dockerfile.
 #
 # Build a specific app from the monorepo:
-#   docker build --build-arg APP_NAME=egfilm  -f docker/Dockerfile.app -t egfilm:latest  .
-#   docker build --build-arg APP_NAME=egsport -f docker/Dockerfile.app -t egsport:latest .
-#   docker build --build-arg APP_NAME=egtv    -f docker/Dockerfile.app -t egtv:latest    .
+#   docker build --build-arg APP_NAME=movies  -f docker/Dockerfile.app -t riocut-movies:latest  .
+#   docker build --build-arg APP_NAME=sports -f docker/Dockerfile.app -t riocut-sports:latest .
+#   docker build --build-arg APP_NAME=tv    -f docker/Dockerfile.app -t riocut-tv:latest    .
 
 FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat
@@ -32,9 +32,9 @@ ARG NEXT_PUBLIC_APP_NAME
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_TMDB_API_KEY
 ARG NEXT_PUBLIC_BLOG_SITE_URL
-ARG NEXT_PUBLIC_EGFILM_URL
-ARG NEXT_PUBLIC_EGSPORT_URL
-ARG NEXT_PUBLIC_EGTV_URL
+ARG NEXT_PUBLIC_RIOCUT_URL
+ARG NEXT_PUBLIC_RIOCUT_SPORTS_URL
+ARG NEXT_PUBLIC_RIOCUT_TV_URL
 ARG NEXT_PUBLIC_TURN_SERVER
 ARG NEXT_PUBLIC_TURN_USERNAME
 ARG NEXT_PUBLIC_BUILD_VERSION
@@ -48,9 +48,9 @@ ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_PUBLIC_TMDB_API_KEY=${NEXT_PUBLIC_TMDB_API_KEY}
 ENV NEXT_PUBLIC_BLOG_SITE_URL=${NEXT_PUBLIC_BLOG_SITE_URL}
-ENV NEXT_PUBLIC_EGFILM_URL=${NEXT_PUBLIC_EGFILM_URL}
-ENV NEXT_PUBLIC_EGSPORT_URL=${NEXT_PUBLIC_EGSPORT_URL}
-ENV NEXT_PUBLIC_EGTV_URL=${NEXT_PUBLIC_EGTV_URL}
+ENV NEXT_PUBLIC_RIOCUT_URL=${NEXT_PUBLIC_RIOCUT_URL}
+ENV NEXT_PUBLIC_RIOCUT_SPORTS_URL=${NEXT_PUBLIC_RIOCUT_SPORTS_URL}
+ENV NEXT_PUBLIC_RIOCUT_TV_URL=${NEXT_PUBLIC_RIOCUT_TV_URL}
 ENV NEXT_PUBLIC_TURN_SERVER=${NEXT_PUBLIC_TURN_SERVER}
 ENV NEXT_PUBLIC_TURN_USERNAME=${NEXT_PUBLIC_TURN_USERNAME}
 ENV NEXT_PUBLIC_BUILD_VERSION=${NEXT_PUBLIC_BUILD_VERSION}
@@ -62,7 +62,7 @@ ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=${NEXT_PUBLIC_GA_MEASUREMENT_ID}
 COPY --from=deps /repo/ ./
 COPY --from=pruner /repo/out/full/ ./
 
-RUN pnpm --filter @egfilm/db db:generate
+RUN pnpm --filter @riocut/db db:generate
 RUN pnpm --filter ${APP_NAME} build
 
 # Materialise a self-contained production node_modules tree using `pnpm deploy`.

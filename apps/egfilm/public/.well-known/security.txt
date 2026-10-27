@@ -1,8 +1,0 @@
-Contact: mailto:security@egfilm.com
-Contact: https://egfilm.xyz/security
-Expires: 2026-12-31T23:59:59.000Z
-Encryption: https://egfilm.xyz/pgp-key.txt
-Acknowledgments: https://egfilm.xyz/security/hall-of-fame
-Preferred-Languages: en
-Canonical: https://egfilm.xyz/.well-known/security.txt
-Policy: https://egfilm.xyz/security/policy

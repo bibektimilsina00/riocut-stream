@@ -1,4 +1,4 @@
-import { prisma } from '@egfilm/db';
+import { prisma } from '@riocut/db';
 
 export type NotificationType =
     | 'watch_invite'

@@ -104,7 +104,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
         {
             icon: Quote,
             label: 'Quote',
-            action: () => insertMarkdown('<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4">', '</blockquote>'),
+            action: () => insertMarkdown('<blockquote class="border-l-4 border-teal-500 pl-4 italic my-4">', '</blockquote>'),
         },
     ];
 

@@ -8,8 +8,8 @@ export default function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | '
     return (
         <div className="flex items-center justify-center py-20">
             <div className="relative">
-                <div className={`${sizes[size]} border-t-2 border-b-2 border-blue-500 rounded-full animate-spin`}></div>
-                <div className={`absolute inset-0 ${sizes[size]} border-t-2 border-b-2 border-blue-400 rounded-full animate-spin opacity-30`} style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+                <div className={`${sizes[size]} border-t-2 border-b-2 border-teal-500 rounded-full animate-spin`}></div>
+                <div className={`absolute inset-0 ${sizes[size]} border-t-2 border-b-2 border-teal-400 rounded-full animate-spin opacity-30`} style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
             </div>
         </div>
     );

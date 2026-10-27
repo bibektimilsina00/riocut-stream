@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Idempotent nginx patch — wires up WebSocket upgrade for the socket.io
-# endpoint of each EGFilm-family subdomain. Run on the prod VPS as root.
+# endpoint of each Riocut-family subdomain. Run on the prod VPS as root.
 #
 # It assumes the existing server blocks are managed via certbot / sites-available
 # and currently proxy_pass to 127.0.0.1:<APP_PORT>.  The script:
@@ -21,9 +21,9 @@ fi
 
 # host:port pairs to patch (subdomain → upstream app port)
 PATCHES=(
-    "egfilm.xyz:8000"
-    "sports.egfilm.xyz:5555"
-    "tv.egfilm.xyz:3333"
+    "riocut.com:8000"
+    "sports.riocut.com:5555"
+    "tv.riocut.com:3333"
 )
 
 # ---------- 1. global map for Upgrade header ----------------------------

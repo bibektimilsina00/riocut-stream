@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { X, Users, Search, Copy, Check, Video, Mic, Phone } from 'lucide-react';
-import { Button } from '@egfilm/ui/components/ui/button';
+import { Button } from '@riocut/ui/components/ui/button';
 
 interface WatchTogetherModalProps {
     isOpen: boolean;
@@ -261,13 +261,13 @@ export default function WatchTogetherModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
             <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-800">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+                <div className="bg-gradient-to-r from-teal-600 to-purple-600 p-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Users className="w-8 h-8 text-white" />
                             <div>
                                 <h2 className="text-2xl font-bold text-white">Watch Together</h2>
-                                <p className="text-blue-100 text-sm">{movieTitle}</p>
+                                <p className="text-teal-100 text-sm">{movieTitle}</p>
                             </div>
                         </div>
                         <button
@@ -293,7 +293,7 @@ export default function WatchTogetherModal({
                         <button
                             onClick={() => setMode('create')}
                             className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${mode === 'create'
-                                ? 'bg-blue-600 text-white shadow-lg'
+                                ? 'bg-teal-600 text-white shadow-lg'
                                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                 }`}
                         >
@@ -302,7 +302,7 @@ export default function WatchTogetherModal({
                         <button
                             onClick={() => setMode('join')}
                             className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${mode === 'join'
-                                ? 'bg-blue-600 text-white shadow-lg'
+                                ? 'bg-teal-600 text-white shadow-lg'
                                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                 }`}
                         >
@@ -322,7 +322,7 @@ export default function WatchTogetherModal({
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     placeholder="Enter your username"
-                                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                                 />
                             </div>
 
@@ -366,7 +366,7 @@ export default function WatchTogetherModal({
                                             type="checkbox"
                                             checked={enableVideo}
                                             onChange={(e) => setEnableVideo(e.target.checked)}
-                                            className="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                                            className="w-5 h-5 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
                                         />
                                         <Video className="w-5 h-5 text-gray-400" />
                                         <span className="text-gray-300">Enable Video Call</span>
@@ -376,7 +376,7 @@ export default function WatchTogetherModal({
                                             type="checkbox"
                                             checked={enableAudio}
                                             onChange={(e) => setEnableAudio(e.target.checked)}
-                                            className="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                                            className="w-5 h-5 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
                                         />
                                         <Mic className="w-5 h-5 text-gray-400" />
                                         <span className="text-gray-300">Enable Voice Call</span>
@@ -396,7 +396,7 @@ export default function WatchTogetherModal({
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder="Search username..."
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     />
                                 </div>
 
@@ -438,12 +438,12 @@ export default function WatchTogetherModal({
                                         {selectedUsers.map(user => (
                                             <div
                                                 key={user.id}
-                                                className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1 rounded-full"
+                                                className="flex items-center gap-2 bg-teal-600 text-white px-3 py-1 rounded-full"
                                             >
                                                 <span className="text-sm">{user.name}</span>
                                                 <button
                                                     onClick={() => handleRemoveUser(user.id)}
-                                                    className="hover:bg-blue-700 rounded-full p-0.5"
+                                                    className="hover:bg-teal-700 rounded-full p-0.5"
                                                 >
                                                     <X className="w-3 h-3" />
                                                 </button>
@@ -467,7 +467,7 @@ export default function WatchTogetherModal({
                                 <Button
                                     onClick={handleCreateRoom}
                                     disabled={isCreating}
-                                    className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-3 bg-gradient-to-r from-teal-600 to-purple-600 hover:from-teal-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isCreating ? (
                                         <>
@@ -495,7 +495,7 @@ export default function WatchTogetherModal({
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     placeholder="Enter your username"
-                                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                             </div>
 
@@ -509,7 +509,7 @@ export default function WatchTogetherModal({
                                     value={roomCode}
                                     onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                                     placeholder="Enter 6-digit room code"
-                                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-lg"
+                                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono text-lg"
                                     maxLength={6}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
@@ -528,7 +528,7 @@ export default function WatchTogetherModal({
                                             type="checkbox"
                                             checked={enableVideo}
                                             onChange={(e) => setEnableVideo(e.target.checked)}
-                                            className="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                                            className="w-5 h-5 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
                                         />
                                         <Video className="w-5 h-5 text-gray-400" />
                                         <span className="text-gray-300">Enable Video</span>
@@ -538,7 +538,7 @@ export default function WatchTogetherModal({
                                             type="checkbox"
                                             checked={enableAudio}
                                             onChange={(e) => setEnableAudio(e.target.checked)}
-                                            className="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                                            className="w-5 h-5 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
                                         />
                                         <Mic className="w-5 h-5 text-gray-400" />
                                         <span className="text-gray-300">Enable Audio</span>
@@ -549,7 +549,7 @@ export default function WatchTogetherModal({
                             {/* Join Button */}
                             <Button
                                 onClick={handleJoinRoom}
-                                className="w-full py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all"
+                                className="w-full py-3 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold rounded-lg transition-all"
                             >
                                 <Phone className="w-5 h-5 mr-2" />
                                 Join Watch Party

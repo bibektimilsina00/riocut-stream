@@ -1,3 +1,5 @@
+name: riocut
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -14,16 +16,33 @@ services:
       timeout: 3s
       retries: 5
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
 
-  egfilm:
-    image: ${EGFILM_IMAGE_NAME:-ghcr.io/bibektimilsina00/egfilm:latest}
+  movies:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      args:
+        APP_NAME: movies
+        NEXT_PUBLIC_APP_NAME: Riocut
+        NEXT_PUBLIC_APP_URL: ${RIOCUT_URL:-https://riocut.com}
+        NEXT_PUBLIC_TMDB_API_KEY: ${TMDB_API_KEY}
+        NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
+        NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL:-https://riocut.com}
+        NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
+        NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL:-https://tv.riocut.com}
+        NEXT_PUBLIC_TURN_SERVER: ${NEXT_PUBLIC_TURN_SERVER:-}
+        NEXT_PUBLIC_TURN_USERNAME: ${NEXT_PUBLIC_TURN_USERNAME:-}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+        NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
+    image: ${RIOCUT_IMAGE_NAME:-riocut-movies:latest}
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${EGFILM_PORT:-8000}:3000"
+      - "127.0.0.1:${RIOCUT_PORT:-8000}:3000"
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -31,28 +50,46 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
       AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
-      AUTH_URL: ${EGFILM_AUTH_URL}
-      NEXTAUTH_URL: ${EGFILM_AUTH_URL}
+      AUTH_URL: ${RIOCUT_AUTH_URL:-${RIOCUT_URL:-https://riocut.com}}
+      NEXTAUTH_URL: ${RIOCUT_AUTH_URL:-${RIOCUT_URL:-https://riocut.com}}
       TMDB_API_KEY: ${TMDB_API_KEY}
       NEXT_PUBLIC_TMDB_API_KEY: ${TMDB_API_KEY}
-      NEXT_PUBLIC_APP_NAME: EGFilm
-      NEXT_PUBLIC_APP_URL: ${EGFILM_URL}
-      NEXT_PUBLIC_EGFILM_URL: ${EGFILM_URL}
-      NEXT_PUBLIC_EGSPORT_URL: ${EGSPORT_URL}
+      NEXT_PUBLIC_APP_NAME: Riocut
+      NEXT_PUBLIC_APP_URL: ${RIOCUT_URL}
+      NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL}
+      NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL}
       NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
       NEXT_PUBLIC_TURN_SERVER: ${NEXT_PUBLIC_TURN_SERVER:-}
       NEXT_PUBLIC_TURN_USERNAME: ${NEXT_PUBLIC_TURN_USERNAME:-}
       TURN_PASSWORD: ${TURN_PASSWORD:-}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
 
-  egsport:
-    image: ${EGSPORT_IMAGE_NAME:-ghcr.io/bibektimilsina00/egsport:latest}
+  sports:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      args:
+        APP_NAME: sports
+        NEXT_PUBLIC_APP_NAME: Riocut Sports
+        NEXT_PUBLIC_APP_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
+        NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
+        NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL:-https://riocut.com}
+        NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
+        NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL:-https://tv.riocut.com}
+        NEXT_PUBLIC_TURN_SERVER: ${NEXT_PUBLIC_TURN_SERVER:-}
+        NEXT_PUBLIC_TURN_USERNAME: ${NEXT_PUBLIC_TURN_USERNAME:-}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+        NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
+    image: ${RIOCUT_SPORTS_IMAGE_NAME:-riocut-sports:latest}
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${EGSPORT_PORT:-5555}:3000"
+      - "127.0.0.1:${RIOCUT_SPORTS_PORT:-5555}:3000"
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -60,27 +97,45 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
       AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
-      AUTH_URL: ${EGSPORT_AUTH_URL}
-      NEXTAUTH_URL: ${EGSPORT_AUTH_URL}
-      NEXT_PUBLIC_APP_NAME: EGSport
-      NEXT_PUBLIC_APP_URL: ${EGSPORT_URL}
-      NEXT_PUBLIC_EGFILM_URL: ${EGFILM_URL}
-      NEXT_PUBLIC_EGSPORT_URL: ${EGSPORT_URL}
+      AUTH_URL: ${RIOCUT_SPORTS_AUTH_URL:-${RIOCUT_SPORTS_URL:-https://sports.riocut.com}}
+      NEXTAUTH_URL: ${RIOCUT_SPORTS_AUTH_URL:-${RIOCUT_SPORTS_URL:-https://sports.riocut.com}}
+      NEXT_PUBLIC_APP_NAME: Riocut Sports
+      NEXT_PUBLIC_APP_URL: ${RIOCUT_SPORTS_URL}
+      NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL}
+      NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL}
       NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
       NEXT_PUBLIC_TURN_SERVER: ${NEXT_PUBLIC_TURN_SERVER:-}
       NEXT_PUBLIC_TURN_USERNAME: ${NEXT_PUBLIC_TURN_USERNAME:-}
       TURN_PASSWORD: ${TURN_PASSWORD:-}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
       BSD_API_TOKEN: ${BSD_API_TOKEN:-}
 
-  egtv:
-    image: ${EGTV_IMAGE_NAME:-ghcr.io/bibektimilsina00/egtv:latest}
+  tv:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      args:
+        APP_NAME: tv
+        NEXT_PUBLIC_APP_NAME: Riocut TV
+        NEXT_PUBLIC_APP_URL: ${RIOCUT_TV_URL:-https://tv.riocut.com}
+        NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
+        NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL:-https://riocut.com}
+        NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
+        NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL:-https://tv.riocut.com}
+        NEXT_PUBLIC_TURN_SERVER: ${NEXT_PUBLIC_TURN_SERVER:-}
+        NEXT_PUBLIC_TURN_USERNAME: ${NEXT_PUBLIC_TURN_USERNAME:-}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+        NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
+    image: ${RIOCUT_TV_IMAGE_NAME:-riocut-tv:latest}
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${EGTV_PORT:-3333}:3000"
+      - "127.0.0.1:${RIOCUT_TV_PORT:-3333}:3000"
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -88,27 +143,42 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
       AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
-      AUTH_URL: ${EGTV_AUTH_URL}
-      NEXTAUTH_URL: ${EGTV_AUTH_URL}
-      NEXT_PUBLIC_APP_NAME: EGTV
-      NEXT_PUBLIC_APP_URL: ${EGTV_URL}
-      NEXT_PUBLIC_EGFILM_URL: ${EGFILM_URL}
-      NEXT_PUBLIC_EGSPORT_URL: ${EGSPORT_URL}
-      NEXT_PUBLIC_EGTV_URL: ${EGTV_URL}
+      AUTH_URL: ${RIOCUT_TV_AUTH_URL:-${RIOCUT_TV_URL:-https://tv.riocut.com}}
+      NEXTAUTH_URL: ${RIOCUT_TV_AUTH_URL:-${RIOCUT_TV_URL:-https://tv.riocut.com}}
+      NEXT_PUBLIC_APP_NAME: Riocut TV
+      NEXT_PUBLIC_APP_URL: ${RIOCUT_TV_URL}
+      NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL}
+      NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL}
+      NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL}
       NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
       NEXT_PUBLIC_TURN_SERVER: ${NEXT_PUBLIC_TURN_SERVER:-}
       NEXT_PUBLIC_TURN_USERNAME: ${NEXT_PUBLIC_TURN_USERNAME:-}
       TURN_PASSWORD: ${TURN_PASSWORD:-}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
 
-  egblog:
-    image: ${EGBLOG_IMAGE_NAME:-ghcr.io/bibektimilsina00/egblog:latest}
+  blog:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      args:
+        APP_NAME: blog
+        NEXT_PUBLIC_APP_NAME: "Riocut Blog"
+        NEXT_PUBLIC_APP_URL: ${RIOCUT_BLOG_URL:-https://blog.riocut.com}
+        NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL:-https://riocut.com}
+        NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
+        NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL:-https://tv.riocut.com}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+        NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
+    image: ${RIOCUT_BLOG_IMAGE_NAME:-riocut-blog:latest}
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${EGBLOG_PORT:-4444}:3000"
+      - "127.0.0.1:${RIOCUT_BLOG_PORT:-4444}:3000"
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -116,24 +186,41 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
       AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
-      AUTH_URL: ${EGBLOG_AUTH_URL}
-      NEXTAUTH_URL: ${EGBLOG_AUTH_URL}
-      NEXT_PUBLIC_APP_NAME: EGFilm Blog
-      NEXT_PUBLIC_APP_URL: ${EGBLOG_URL}
-      NEXT_PUBLIC_EGFILM_URL: ${EGFILM_URL}
-      NEXT_PUBLIC_EGSPORT_URL: ${EGSPORT_URL}
-      NEXT_PUBLIC_EGTV_URL: ${EGTV_URL}
-      NEXT_PUBLIC_EGBLOG_URL: ${EGBLOG_URL}
+      AUTH_URL: ${RIOCUT_BLOG_AUTH_URL:-${RIOCUT_BLOG_URL:-https://blog.riocut.com}}
+      NEXTAUTH_URL: ${RIOCUT_BLOG_AUTH_URL:-${RIOCUT_BLOG_URL:-https://blog.riocut.com}}
+      NEXT_PUBLIC_APP_NAME: Riocut Blog
+      NEXT_PUBLIC_APP_URL: ${RIOCUT_BLOG_URL}
+      NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL}
+      NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL}
+      NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL}
+      NEXT_PUBLIC_RIOCUT_BLOG_URL: ${RIOCUT_BLOG_URL}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
 
-  egadmin:
-    image: ${EGADMIN_IMAGE_NAME:-ghcr.io/bibektimilsina00/egadmin:latest}
+  admin:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      args:
+        APP_NAME: admin
+        NEXT_PUBLIC_APP_NAME: "Riocut Admin"
+        NEXT_PUBLIC_APP_URL: ${RIOCUT_ADMIN_URL:-https://admin.riocut.com}
+        NEXT_PUBLIC_TMDB_API_KEY: ${TMDB_API_KEY}
+        NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL:-https://riocut.com}
+        NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
+        NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL:-https://tv.riocut.com}
+        NEXT_PUBLIC_RIOCUT_BLOG_URL: ${RIOCUT_BLOG_URL:-https://blog.riocut.com}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+        NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
+    image: ${RIOCUT_ADMIN_IMAGE_NAME:-riocut-admin:latest}
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${EGADMIN_PORT:-5566}:3000"
+      - "127.0.0.1:${RIOCUT_ADMIN_PORT:-5566}:3000"
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -141,18 +228,22 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
       AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
-      AUTH_URL: ${EGADMIN_AUTH_URL}
-      NEXTAUTH_URL: ${EGADMIN_AUTH_URL}
+      AUTH_URL: ${RIOCUT_ADMIN_AUTH_URL:-${RIOCUT_ADMIN_URL:-https://admin.riocut.com}}
+      NEXTAUTH_URL: ${RIOCUT_ADMIN_AUTH_URL:-${RIOCUT_ADMIN_URL:-https://admin.riocut.com}}
       TMDB_API_KEY: ${TMDB_API_KEY}
       NEXT_PUBLIC_TMDB_API_KEY: ${TMDB_API_KEY}
-      NEXT_PUBLIC_APP_NAME: EGFilm Admin
-      NEXT_PUBLIC_APP_URL: ${EGADMIN_URL}
-      NEXT_PUBLIC_EGFILM_URL: ${EGFILM_URL}
-      NEXT_PUBLIC_EGSPORT_URL: ${EGSPORT_URL}
-      NEXT_PUBLIC_EGTV_URL: ${EGTV_URL}
-      NEXT_PUBLIC_EGBLOG_URL: ${EGBLOG_URL}
-      NEXT_PUBLIC_EGADMIN_URL: ${EGADMIN_URL}
+      NEXT_PUBLIC_APP_NAME: Riocut Admin
+      NEXT_PUBLIC_APP_URL: ${RIOCUT_ADMIN_URL}
+      NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL}
+      NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL}
+      NEXT_PUBLIC_RIOCUT_TV_URL: ${RIOCUT_TV_URL}
+      NEXT_PUBLIC_RIOCUT_BLOG_URL: ${RIOCUT_BLOG_URL}
+      NEXT_PUBLIC_RIOCUT_ADMIN_URL: ${RIOCUT_ADMIN_URL}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:-}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://us.i.posthog.com}
 
 volumes:
   postgres_data:
+    # Pinned to the pre-rebrand name: this volume holds the live database.
+    name: egfilm_postgres_data

@@ -1,5 +1,5 @@
 {
-  "extends": "@egfilm/config/tsconfig/next.json",
+  "extends": "@riocut/config/tsconfig/next.json",
   "compilerOptions": {
     "baseUrl": "."
   },

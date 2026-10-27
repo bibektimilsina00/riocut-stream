@@ -1,4 +1,4 @@
-import { prisma } from '@egfilm/db';
+import { prisma } from '@riocut/db';
 
 /** Allowed reaction types. Anything else is rejected. */
 export const REACTION_TYPES = ['like', 'love', 'laugh', 'wow', 'sad', 'fire'] as const;

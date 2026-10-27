@@ -1,0 +1,8 @@
+Contact: mailto:security@riocut.com
+Contact: https://riocut.com/security
+Expires: 2026-12-31T23:59:59.000Z
+Encryption: https://riocut.com/pgp-key.txt
+Acknowledgments: https://riocut.com/security/hall-of-fame
+Preferred-Languages: en
+Canonical: https://riocut.com/.well-known/security.txt
+Policy: https://riocut.com/security/policy

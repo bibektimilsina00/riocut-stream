@@ -136,7 +136,7 @@ export default function Pagination({
                                 size="icon"
                                 // Use 'w-auto px-3' for number buttons to handle multi-digit numbers without overflow
                                 className={`h-9 w-auto px-3 shrink-0 transition-colors duration-200 ${isActive
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                                    ? 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600'
                                     : 'bg-transparent text-white hover:bg-gray-800 border-gray-700'
                                     }`}
                                 aria-label={`Go to page ${pageNum}`}
@@ -191,7 +191,7 @@ export default function Pagination({
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={(e) => e.key === 'Enter' && handleInputSubmit()}
-                    className="w-16 h-9 text-white rounded border border-gray-700 px-2 py-1 text-sm bg-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-16 h-9 text-white rounded border border-gray-700 px-2 py-1 text-sm bg-gray-900 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     aria-label={`Enter page number, max ${totalPages.toLocaleString()}`}
                 />
                 <Button size="sm" onClick={handleInputSubmit} disabled={isLoading}>

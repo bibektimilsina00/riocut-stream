@@ -21,7 +21,7 @@ export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerP
         <div className="flex flex-col items-center justify-center gap-3">
             <Loader2
                 className={cn(
-                    'animate-spin text-blue-500',
+                    'animate-spin text-teal-500',
                     sizeClasses[size],
                     className
                 )}
@@ -52,7 +52,7 @@ export function FullScreenLoader({ text = 'Loading...' }: { text?: string }) {
 export function InlineLoader({ size = 'sm', text }: LoadingSpinnerProps) {
     return (
         <div className="flex items-center gap-2 py-4">
-            <Loader2 className={cn('animate-spin text-blue-500', sizeClasses[size])} />
+            <Loader2 className={cn('animate-spin text-teal-500', sizeClasses[size])} />
             {text && <span className="text-gray-400 text-sm">{text}</span>}
         </div>
     );

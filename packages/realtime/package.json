@@ -1,5 +1,5 @@
 {
-  "name": "@egfilm/realtime",
+  "name": "@riocut/realtime",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -21,9 +21,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@egfilm/db": "workspace:*",
-    "@egfilm/services": "workspace:*",
-    "@egfilm/ui": "workspace:*",
+    "@riocut/db": "workspace:*",
+    "@riocut/services": "workspace:*",
+    "@riocut/ui": "workspace:*",
     "axios": "^1.12.2",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
@@ -38,7 +38,7 @@
     "react-dom": "^19"
   },
   "devDependencies": {
-    "@egfilm/config": "workspace:*",
+    "@riocut/config": "workspace:*",
     "@types/react": "^19",
     "typescript": "^5"
   }

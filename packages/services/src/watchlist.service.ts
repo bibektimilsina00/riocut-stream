@@ -1,4 +1,4 @@
-import { prisma } from '@egfilm/db';
+import { prisma } from '@riocut/db';
 import type { MediaTypeId } from './types';
 
 export interface WatchlistItemData {
@@ -6,7 +6,7 @@ export interface WatchlistItemData {
     mediaType: MediaTypeId;
     title: string;
     posterPath?: string | null;
-    // Sports (egsport) — additive, nullable
+    // Sports (sports) — additive, nullable
     sport?: string | null;
     league?: string | null;
     matchExternalId?: string | null;

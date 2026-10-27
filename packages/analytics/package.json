@@ -1,0 +1,33 @@
+{
+  "name": "@riocut/analytics",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./instrumentation": "./src/instrumentation.ts",
+    "./components/IdentifyUser": "./src/IdentifyUser.tsx",
+    "./components/GlobalError": "./src/GlobalError.tsx"
+  },
+  "scripts": {
+    "lint": "echo 'no lint'",
+    "type-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "next": "^15",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@riocut/config": "workspace:*",
+    "@types/react": "^19",
+    "next": "15.5.11",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "19.1.0",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "posthog-js": "^1.438.23",
+    "posthog-node": "^5.57.2"
+  }
+}

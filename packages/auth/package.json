@@ -1,5 +1,5 @@
 {
-  "name": "@egfilm/auth",
+  "name": "@riocut/auth",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -16,7 +16,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@egfilm/db": "workspace:*",
+    "@riocut/analytics": "workspace:^",
+    "@riocut/db": "workspace:*",
     "bcryptjs": "^3.0.2"
   },
   "peerDependencies": {
@@ -25,7 +26,7 @@
     "react": "^19"
   },
   "devDependencies": {
-    "@egfilm/config": "workspace:*",
+    "@riocut/config": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
     "@types/react": "^19",
     "typescript": "^5"

@@ -1,5 +1,5 @@
 # ============================================================
-# 🚀 EGFilm Monorepo – Production Deploy (egfilm + egsport + egtv)
+# 🚀 Riocut Monorepo – Production Deploy (movies + sports + tv)
 #   Builds a per-app image from docker/Dockerfile.app (turbo prune)
 #   and deploys all apps via deploy.sh on the production server.
 # ============================================================
@@ -60,16 +60,16 @@ jobs:
               - 'docker-compose.yml'
               - 'deploy.sh'
               - '.github/workflows/**'
-            egfilm:
-              - 'apps/egfilm/**'
-            egsport:
-              - 'apps/egsport/**'
-            egtv:
-              - 'apps/egtv/**'
-            egblog:
-              - 'apps/egblog/**'
-            egadmin:
-              - 'apps/egadmin/**'
+            movies:
+              - 'apps/movies/**'
+            sports:
+              - 'apps/sports/**'
+            tv:
+              - 'apps/tv/**'
+            blog:
+              - 'apps/blog/**'
+            admin:
+              - 'apps/admin/**'
 
       - id: version
         run: |
@@ -84,23 +84,23 @@ jobs:
       - id: plan
         env:
           SHARED: ${{ steps.changes.outputs.shared }}
-          C_EGFILM: ${{ steps.changes.outputs.egfilm }}
-          C_EGSPORT: ${{ steps.changes.outputs.egsport }}
-          C_EGTV: ${{ steps.changes.outputs.egtv }}
-          C_EGBLOG: ${{ steps.changes.outputs.egblog }}
-          C_EGADMIN: ${{ steps.changes.outputs.egadmin }}
+          C_MOVIES: ${{ steps.changes.outputs.movies }}
+          C_SPORTS: ${{ steps.changes.outputs.sports }}
+          C_TV: ${{ steps.changes.outputs.tv }}
+          C_BLOG: ${{ steps.changes.outputs.blog }}
+          C_ADMIN: ${{ steps.changes.outputs.admin }}
           FORCE: ${{ github.event.inputs.force_deploy }}
         run: |
           set -euo pipefail
           # app -> "public_app_name|app_url_var|default_url"
           declare -A META=(
-            [egfilm]="EGFilm|EGFILM_URL|https://egfilm.xyz"
-            [egsport]="EGSport|EGSPORT_URL|https://sports.egfilm.xyz"
-            [egtv]="EGTV|EGTV_URL|https://tv.egfilm.xyz"
-            [egblog]="EGFilm Blog|EGBLOG_URL|https://blog.egfilm.xyz"
-            [egadmin]="EGFilm Admin|EGADMIN_URL|https://admin.egfilm.xyz"
+            [movies]="Riocut|RIOCUT_URL|https://riocut.com"
+            [sports]="Riocut Sports|RIOCUT_SPORTS_URL|https://sports.riocut.com"
+            [tv]="Riocut TV|RIOCUT_TV_URL|https://tv.riocut.com"
+            [blog]="Riocut Blog|RIOCUT_BLOG_URL|https://blog.riocut.com"
+            [admin]="Riocut Admin|RIOCUT_ADMIN_URL|https://admin.riocut.com"
           )
-          ORDER=(egfilm egsport egtv egblog egadmin)
+          ORDER=(movies sports tv blog admin)
 
           rebuild_all=false
           if [[ "$SHARED" == "true" || "$FORCE" == "true" || "$GITHUB_REF" == refs/tags/* ]]; then
@@ -155,16 +155,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Prisma generate
-        run: pnpm --filter @egfilm/db db:generate
+        run: pnpm --filter @riocut/db db:generate
 
       - name: Lint
         run: pnpm run lint
 
       - name: Type-check apps
-        run: pnpm --filter egfilm --filter egsport --filter egtv --filter egblog --filter egadmin type-check
+        run: pnpm --filter movies --filter sports --filter tv --filter blog --filter admin type-check
 
       - name: Unit tests
-        run: pnpm --filter @egfilm/services test
+        run: pnpm --filter @riocut/services test
 
       # Note: we used to run `pnpm run build` here, but each app is
       # already rebuilt inside its docker image in the matrix job below.
@@ -211,7 +211,7 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.app }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/riocut-${{ matrix.app }}
           tags: |
             type=raw,value=${{ needs.validate.outputs.version }}
             type=raw,value=latest,enable={{is_default_branch}}
@@ -231,10 +231,10 @@ jobs:
             NEXT_PUBLIC_APP_NAME=${{ matrix.public_app_name }}
             NEXT_PUBLIC_APP_URL=${{ vars[matrix.app_url_var] || matrix.default_url }}
             NEXT_PUBLIC_TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
-            NEXT_PUBLIC_BLOG_SITE_URL=${{ vars.BLOG_SITE_URL || 'https://blog.egfilm.xyz' }}
-            NEXT_PUBLIC_EGFILM_URL=${{ vars.EGFILM_URL || 'https://egfilm.xyz' }}
-            NEXT_PUBLIC_EGSPORT_URL=${{ vars.EGSPORT_URL || 'https://sports.egfilm.xyz' }}
-            NEXT_PUBLIC_EGTV_URL=${{ vars.EGTV_URL || 'https://tv.egfilm.xyz' }}
+            NEXT_PUBLIC_BLOG_SITE_URL=${{ vars.BLOG_SITE_URL || 'https://blog.riocut.com' }}
+            NEXT_PUBLIC_RIOCUT_URL=${{ vars.RIOCUT_URL || 'https://riocut.com' }}
+            NEXT_PUBLIC_RIOCUT_SPORTS_URL=${{ vars.RIOCUT_SPORTS_URL || 'https://sports.riocut.com' }}
+            NEXT_PUBLIC_RIOCUT_TV_URL=${{ vars.RIOCUT_TV_URL || 'https://tv.riocut.com' }}
             NEXT_PUBLIC_TURN_SERVER=${{ vars.TURN_SERVER || '' }}
             NEXT_PUBLIC_TURN_USERNAME=${{ vars.TURN_USERNAME || '' }}
             NEXT_PUBLIC_BUILD_VERSION=${{ needs.validate.outputs.version }}
@@ -247,7 +247,7 @@ jobs:
     needs: [validate, ci, build]
     environment:
       name: production
-      url: ${{ vars.EGTV_URL || 'https://tv.egfilm.xyz' }}
+      url: ${{ vars.RIOCUT_TV_URL || 'https://tv.riocut.com' }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -276,34 +276,34 @@ jobs:
 
           AUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
           AUTH_TRUST_HOST=true
-          AUTH_COOKIE_DOMAIN=${{ vars.AUTH_COOKIE_DOMAIN || '.egfilm.xyz' }}
+          AUTH_COOKIE_DOMAIN=${{ vars.AUTH_COOKIE_DOMAIN || '.riocut.com' }}
           TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
 
-          EGFILM_IMAGE_NAME=${REG}/${OWNER}/egfilm:${VER}
-          EGSPORT_IMAGE_NAME=${REG}/${OWNER}/egsport:${VER}
-          EGTV_IMAGE_NAME=${REG}/${OWNER}/egtv:${VER}
-          EGBLOG_IMAGE_NAME=${REG}/${OWNER}/egblog:${VER}
-          EGADMIN_IMAGE_NAME=${REG}/${OWNER}/egadmin:${VER}
+          RIOCUT_IMAGE_NAME=${REG}/${OWNER}/riocut-movies:${VER}
+          RIOCUT_SPORTS_IMAGE_NAME=${REG}/${OWNER}/riocut-sports:${VER}
+          RIOCUT_TV_IMAGE_NAME=${REG}/${OWNER}/riocut-tv:${VER}
+          RIOCUT_BLOG_IMAGE_NAME=${REG}/${OWNER}/riocut-blog:${VER}
+          RIOCUT_ADMIN_IMAGE_NAME=${REG}/${OWNER}/riocut-admin:${VER}
 
-          EGFILM_PORT=${{ vars.EGFILM_PORT || '8000' }}
-          EGSPORT_PORT=${{ vars.EGSPORT_PORT || '5555' }}
-          EGTV_PORT=${{ vars.EGTV_PORT || '3333' }}
-          EGBLOG_PORT=${{ vars.EGBLOG_PORT || '4444' }}
-          EGADMIN_PORT=${{ vars.EGADMIN_PORT || '5566' }}
+          RIOCUT_PORT=${{ vars.RIOCUT_PORT || '8000' }}
+          RIOCUT_SPORTS_PORT=${{ vars.RIOCUT_SPORTS_PORT || '5555' }}
+          RIOCUT_TV_PORT=${{ vars.RIOCUT_TV_PORT || '3333' }}
+          RIOCUT_BLOG_PORT=${{ vars.RIOCUT_BLOG_PORT || '4444' }}
+          RIOCUT_ADMIN_PORT=${{ vars.RIOCUT_ADMIN_PORT || '5566' }}
 
-          EGFILM_URL=${{ vars.EGFILM_URL || 'https://egfilm.xyz' }}
-          EGSPORT_URL=${{ vars.EGSPORT_URL || 'https://sports.egfilm.xyz' }}
-          EGTV_URL=${{ vars.EGTV_URL || 'https://tv.egfilm.xyz' }}
-          EGBLOG_URL=${{ vars.EGBLOG_URL || 'https://blog.egfilm.xyz' }}
-          EGADMIN_URL=${{ vars.EGADMIN_URL || 'https://admin.egfilm.xyz' }}
+          RIOCUT_URL=${{ vars.RIOCUT_URL || 'https://riocut.com' }}
+          RIOCUT_SPORTS_URL=${{ vars.RIOCUT_SPORTS_URL || 'https://sports.riocut.com' }}
+          RIOCUT_TV_URL=${{ vars.RIOCUT_TV_URL || 'https://tv.riocut.com' }}
+          RIOCUT_BLOG_URL=${{ vars.RIOCUT_BLOG_URL || 'https://blog.riocut.com' }}
+          RIOCUT_ADMIN_URL=${{ vars.RIOCUT_ADMIN_URL || 'https://admin.riocut.com' }}
 
-          EGFILM_AUTH_URL=${{ vars.EGFILM_URL || 'https://egfilm.xyz' }}
-          EGSPORT_AUTH_URL=${{ vars.EGSPORT_URL || 'https://sports.egfilm.xyz' }}
-          EGTV_AUTH_URL=${{ vars.EGTV_URL || 'https://tv.egfilm.xyz' }}
-          EGBLOG_AUTH_URL=${{ vars.EGBLOG_URL || 'https://blog.egfilm.xyz' }}
-          EGADMIN_AUTH_URL=${{ vars.EGADMIN_URL || 'https://admin.egfilm.xyz' }}
+          RIOCUT_AUTH_URL=${{ vars.RIOCUT_URL || 'https://riocut.com' }}
+          RIOCUT_SPORTS_AUTH_URL=${{ vars.RIOCUT_SPORTS_URL || 'https://sports.riocut.com' }}
+          RIOCUT_TV_AUTH_URL=${{ vars.RIOCUT_TV_URL || 'https://tv.riocut.com' }}
+          RIOCUT_BLOG_AUTH_URL=${{ vars.RIOCUT_BLOG_URL || 'https://blog.riocut.com' }}
+          RIOCUT_ADMIN_AUTH_URL=${{ vars.RIOCUT_ADMIN_URL || 'https://admin.riocut.com' }}
 
-          NEXT_PUBLIC_BLOG_SITE_URL=${{ vars.BLOG_SITE_URL || 'https://blog.egfilm.xyz' }}
+          NEXT_PUBLIC_BLOG_SITE_URL=${{ vars.BLOG_SITE_URL || 'https://blog.riocut.com' }}
           NEXT_PUBLIC_TURN_SERVER=${{ vars.TURN_SERVER || '' }}
           NEXT_PUBLIC_TURN_USERNAME=${{ vars.TURN_USERNAME || '' }}
           TURN_PASSWORD=${{ secrets.TURN_PASSWORD || '' }}
@@ -322,7 +322,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ vars.SSH_PORT || 22 }}
           source: ".env,deploy.sh,docker-compose.yml"
-          target: "~/egfilm/"
+          target: "~/riocut/"
           overwrite: true
 
       - name: 🚀 Execute deploy.sh
@@ -334,7 +334,7 @@ jobs:
           port: ${{ vars.SSH_PORT || 22 }}
           command_timeout: 20m
           script: |
-            cd ~/egfilm
+            cd ~/riocut
             chmod +x deploy.sh
             bash deploy.sh
 
@@ -347,7 +347,7 @@ jobs:
           port: ${{ vars.SSH_PORT || 22 }}
           script: |
             set -e
-            for p in "${{ vars.EGFILM_PORT || '8000' }}" "${{ vars.EGSPORT_PORT || '5555' }}" "${{ vars.EGTV_PORT || '3333' }}" "${{ vars.EGBLOG_PORT || '4444' }}" "${{ vars.EGADMIN_PORT || '5566' }}"; do
+            for p in "${{ vars.RIOCUT_PORT || '8000' }}" "${{ vars.RIOCUT_SPORTS_PORT || '5555' }}" "${{ vars.RIOCUT_TV_PORT || '3333' }}" "${{ vars.RIOCUT_BLOG_PORT || '4444' }}" "${{ vars.RIOCUT_ADMIN_PORT || '5566' }}"; do
               echo -n "  :$p/api/health … "
               curl -sf "http://localhost:$p/api/health" >/dev/null && echo "✅" || { echo "❌"; exit 1; }
             done
@@ -366,5 +366,5 @@ jobs:
             echo "## ❌ Deployment Failed (${{ needs.deploy.result }})" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "- **Version**: ${{ needs.validate.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Apps**: egfilm, egsport, egtv, egblog, egadmin" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Apps**: movies, sports, tv, blog, admin" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Triggered by**: ${{ github.event_name }}" >> "$GITHUB_STEP_SUMMARY"

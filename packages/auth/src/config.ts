@@ -17,8 +17,8 @@ export interface AuthFactoryOptions {
     adminPaths?: string[];
     /**
      * Cookie domain — set to `.your-apex.com` for cross-subdomain SSO across
-     * sibling apps (e.g. `.egfilm.xyz` shares the session cookie between
-     * `egfilm.xyz` and `sports.egfilm.xyz`). Leave undefined for local dev.
+     * sibling apps (e.g. `.riocut.com` shares the session cookie between
+     * `riocut.com` and `sports.riocut.com`). Leave undefined for local dev.
      */
     cookieDomain?: string;
 }

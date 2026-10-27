@@ -1,5 +1,5 @@
 {
-  "name": "@egfilm/services",
+  "name": "@riocut/services",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -17,13 +17,13 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@egfilm/db": "workspace:*"
+    "@riocut/db": "workspace:*"
   },
   "peerDependencies": {
     "next": "^15"
   },
   "devDependencies": {
-    "@egfilm/config": "workspace:*",
+    "@riocut/config": "workspace:*",
     "next": "15.5.11",
     "typescript": "^5",
     "vitest": "^2.1.0"

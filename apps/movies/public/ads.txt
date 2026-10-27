@@ -1,0 +1,11 @@
+# Ads.txt file for riocut.com
+# This file is used to declare authorized digital advertising sellers
+# Format: <Field #1>, <Field #2>, <Field #3>, <Field #4>
+# <SSP/Exchange Domain>, <Publisher's Account ID>, <Type of Relationship>, <TAG_ID>
+
+# Example entries (replace with actual values when needed):
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+# doubleclick.net, 0000000000, DIRECT, f08c47fec0942fa0
+
+# Contact information
+# contact=admin@riocut.com

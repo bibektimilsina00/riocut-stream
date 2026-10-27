@@ -1,4 +1,4 @@
-import { prisma } from '@egfilm/db';
+import { prisma } from '@riocut/db';
 
 // Single global setting key used in the AppSetting table.
 const TMDB_SETTING_KEY = 'tmdb_api_key';

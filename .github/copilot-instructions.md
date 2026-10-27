@@ -1,7 +1,7 @@
-# Egfilm - AI Agent Instructions (Updated)
+# Riocut - AI Agent Instructions (Updated)
 
 ## Project Overview
-**Egfilm** is a modern Next.js 15 streaming platform with:
+**Riocut** is a modern Next.js 15 streaming platform with:
 - **Embedded video playback** with multi-source support (VidSrc, 2Embed, SuperEmbed, etc.)
 - **Real-time Watch Together** via WebRTC peer connections and Socket.IO
 - **Advanced state management** using TanStack React Query (replaces basic hooks)
@@ -247,12 +247,12 @@ git push origin main
 
 # View logs on server
 ssh user@server
-docker logs -f egfilm-green
+docker logs -f riocut-green
 ```
 
 **Deployment Script**: `deploy.sh` on server handles blue-green deployment
-- Must be placed at `~/egfilm/deploy.sh` on server
-- GitHub Actions SSHs to server and executes: `IMAGE_NAME=ghcr.io/.../egfilm:deploy ./deploy.sh`
+- Must be placed at `~/riocut/deploy.sh` on server
+- GitHub Actions SSHs to server and executes: `IMAGE_NAME=ghcr.io/.../riocut-movies:deploy ./deploy.sh`
 - Script handles: pull image → blue container → health check → green deployment → cleanup
 
 ### CI/CD Pipeline
@@ -266,7 +266,7 @@ docker logs -f egfilm-green
 ### Key Environment Variables
 ```env
 # Required
-DATABASE_URL=postgresql://user:password@localhost:5432/egfilm
+DATABASE_URL=postgresql://user:password@localhost:5432/riocut
 NEXT_PUBLIC_TMDB_API_KEY=your_key_here
 NEXTAUTH_SECRET=generate_with_openssl_rand_base64_32
 NEXTAUTH_URL=http://localhost:8000  # Match dev port!

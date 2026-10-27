@@ -10,7 +10,7 @@
 
 type Emitter = { to: (room: string) => { emit: (event: string, payload: unknown) => void } };
 
-const KEY = '__egfilmCommentIo';
+const KEY = '__riocutCommentIo';
 
 export function setCommentIo(io: Emitter): void {
     (globalThis as unknown as Record<string, unknown>)[KEY] = io;

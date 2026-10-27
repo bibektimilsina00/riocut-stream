@@ -7,7 +7,7 @@ import {
     removeRoomParticipant,
     saveChatMessage,
     updateRoomActivity,
-} from '@egfilm/services';
+} from '@riocut/services';
 import { setCommentIo, commentRoom } from './commentBus';
 
 export const config = {
@@ -306,7 +306,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
                 // Save message to database
                 try {
                     const participant = room.participants.get(socket.id);
-                    const roomData = await import('@egfilm/services').then(m =>
+                    const roomData = await import('@riocut/services').then(m =>
                         m.getWatchRoomByCode(roomCode)
                     );
 

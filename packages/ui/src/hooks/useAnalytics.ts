@@ -1,5 +1,7 @@
 'use client';
 
+import { track } from '@riocut/analytics/client';
+
 /**
  * Google Analytics Hook for React
  * 
@@ -23,7 +25,6 @@ export function useAnalytics() {
         if (typeof window !== 'undefined' && window.gtag) {
             return window.gtag;
         }
-        console.warn('Google Analytics not loaded yet');
         return null;
     };
 
@@ -33,9 +34,9 @@ export function useAnalytics() {
      * @param properties - Event data
      */
     const trackEvent = (eventName: string, properties?: EventProperties) => {
+        track(eventName, properties);
         const gtag = getGtag();
         if (!gtag) {
-            console.warn(`Cannot track event "${eventName}": Google Analytics not available`);
             return;
         }
 

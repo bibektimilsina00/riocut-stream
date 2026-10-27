@@ -1,5 +1,5 @@
 {
-  "name": "@egfilm/db",
+  "name": "@riocut/db",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

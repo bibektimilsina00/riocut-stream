@@ -1,4 +1,4 @@
-// Egfilm Database Schema
+// Riocut Database Schema
 // PostgreSQL database for persistent user data and preferences
 
 generator client {
@@ -51,11 +51,11 @@ model User {
   blogComments BlogComment[]
   blogLikes    BlogLike[]
 
-  // EGTV (live TV) Relations
+  // Riocut TV (live TV) Relations
   tvFavorites TvFavorite[]
   tvRecent    TvRecent[]
 
-  // EGSport match comments
+  // Riocut Sports match comments
   matchComments         MatchComment[]
   matchCommentReactions MatchCommentReaction[]
 }
@@ -98,7 +98,7 @@ model WatchlistItem {
   title           String
   posterPath      String?
   addedAt         DateTime  @default(now())
-  // Sports (egsport) — all nullable, additive
+  // Sports (sports) — all nullable, additive
   sport           String? // e.g. 'football', 'basketball', 'ufc'
   league          String? // league code
   matchExternalId String? // raw sportsrc id (string)
@@ -123,7 +123,7 @@ model ContinueWatching {
   season          Int? // for TV shows
   episode         Int? // for TV shows
   updatedAt       DateTime  @updatedAt
-  // Sports (egsport) — all nullable, additive
+  // Sports (sports) — all nullable, additive
   sport           String?
   league          String?
   matchExternalId String?
@@ -151,7 +151,7 @@ model WatchRoom {
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   lastActiveAt    DateTime  @default(now())
-  // Sports (egsport) — all nullable, additive
+  // Sports (sports) — all nullable, additive
   sport           String?
   league          String?
   matchExternalId String?
@@ -185,7 +185,7 @@ model Notification {
   mediaTitle String?
   embedUrl   String?
 
-  // Sports (egsport) — additive
+  // Sports (sports) — additive
   sport           String?
   matchExternalId String?
 
@@ -289,7 +289,7 @@ model VideoProvider {
   @@index([isDefault])
 }
 
-// ---------- EGSport upstream provider configs ----------
+// ---------- Riocut Sports upstream provider configs ----------
 // Each row is one upstream provider instance. `kind` selects the code-side
 // adapter (sportsrc, streamed, esportex, dlhd). baseUrl overrides the adapter's
 // default host; apiKey is only used by adapters that require it (dlhd).
@@ -314,7 +314,7 @@ model SportsProviderConfig {
   @@index([isEnabled, sortOrder])
 }
 
-// ---------- EGSport source reliability signals ----------
+// ---------- Riocut Sports source reliability signals ----------
 // One row per "this source didn't work" event. Aggregated by client + admin to
 // re-rank sources so a stream that fails often gets pushed to the back for
 // everyone. Country is best-effort from request headers, no PII beyond that.
@@ -443,7 +443,7 @@ model BlogGenerationProgress {
   @@index([mediaType, sortBy])
 }
 
-// ---------- EGSport match comments ----------
+// ---------- Riocut Sports match comments ----------
 
 model MatchComment {
   id         String   @id @default(cuid())

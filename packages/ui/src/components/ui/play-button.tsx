@@ -33,7 +33,7 @@ const PlayButton = React.forwardRef<HTMLButtonElement, PlayButtonProps>(
         return (
             <Button
                 ref={ref}
-                className={cn("gap-2 bg-blue-600 hover:bg-blue-700 text-white", className)}
+                className={cn("gap-2 bg-teal-600 hover:bg-teal-700 text-white", className)}
                 size={size}
                 disabled={disabled || isButtonLoading}
                 onClick={handleClick}

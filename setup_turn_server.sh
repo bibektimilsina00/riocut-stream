@@ -1,15 +1,15 @@
 #!/bin/bash
 #
-# Setup coturn TURN server on a Linux VPS for EGFilm / EGSport WebRTC.
+# Setup coturn TURN server on a Linux VPS for Riocut / Riocut Sports WebRTC.
 # Enables P2P relay when the provider blocks UDP or peers are behind NAT.
 #
 # Usage (as root):
 #   sudo bash setup_turn_server.sh
 #
 # Optional environment overrides (recommended for prod):
-#   TURN_USER=egfilm          # username (default: egfilm)
+#   TURN_USER=movies          # username (default: movies)
 #   TURN_PASSWORD=...         # password (default: random 32-char)
-#   TURN_REALM=egfilm.xyz     # realm  (default: egfilm.xyz)
+#   TURN_REALM=riocut.com     # realm  (default: riocut.com)
 #   TURN_PORT=3478            # listening port
 #   TURN_TLS_PORT=5349        # TLS port
 #
@@ -21,9 +21,9 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # ---------- Config -----------------------------------------------------------
-TURN_USER="${TURN_USER:-egfilm}"
+TURN_USER="${TURN_USER:-riocut}"
 TURN_PASSWORD="${TURN_PASSWORD:-$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32 || openssl rand -hex 16)}"
-TURN_REALM="${TURN_REALM:-egfilm.xyz}"
+TURN_REALM="${TURN_REALM:-riocut.com}"
 TURN_PORT="${TURN_PORT:-3478}"
 TURN_TLS_PORT="${TURN_TLS_PORT:-5349}"
 
@@ -35,7 +35,7 @@ if [[ -z "$SERVER_IP" ]]; then
     exit 1
 fi
 
-echo "🚀 EGFilm TURN Server Setup"
+echo "🚀 Riocut TURN Server Setup"
 echo "================================"
 echo "📍 Server IP:    $SERVER_IP"
 echo "👤 TURN user:    $TURN_USER"
@@ -61,7 +61,7 @@ install -d -o coturn -g coturn /etc/coturn /var/lib/coturn /var/log/coturn || {
 # ---------- Write config -----------------------------------------------------
 echo "⚙️  Writing /etc/coturn/turnserver.conf..."
 cat > /etc/coturn/turnserver.conf <<EOF
-# EGFilm TURN Server Configuration
+# Riocut TURN Server Configuration
 # Generated $(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 # Listen on all interfaces
@@ -145,7 +145,7 @@ echo "  TURN_SERVER       (vars):  turn:${SERVER_IP}:${TURN_PORT}"
 echo "  TURN_USERNAME     (vars):  ${TURN_USER}"
 echo "  TURN_PASSWORD     (secret): ${TURN_PASSWORD}"
 echo ""
-echo "ICE config for apps/egfilm/src/app/watch-together/page.tsx:"
+echo "ICE config for apps/movies/src/app/watch-together/page.tsx:"
 cat <<EOC
 iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },

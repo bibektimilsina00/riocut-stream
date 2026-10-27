@@ -1,4 +1,4 @@
-import { prisma } from '@egfilm/db';
+import { prisma } from '@riocut/db';
 import type { MediaTypeId } from './types';
 
 export interface ContinueWatchingData {

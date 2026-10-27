@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@egfilm/db';
+import { prisma } from '@riocut/db';
 import { createAuthConfig, type AuthFactoryOptions } from './config';
 
 export function createAuth(opts: AuthFactoryOptions = {}) {
