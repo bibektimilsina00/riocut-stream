@@ -12,18 +12,20 @@ import { useBadSources } from '@/lib/hooks/useBadSources';
  *  - LOAD_GRACE_MS: iframe never signals a load → auto-advance + report.
  *  - STALL_MS: no postMessage from iframe + no user interaction → show a "stuck?"
  *    nudge. Viewer's click on the nudge's Try next → report + blacklist.
- *  - useBadSources reorders sources under the hood so bad ones are picked last
- *    on auto-failover, but the UI shows every source the same.
+ *  - OK_DWELL_MS: viewer stayed on a source (tab visible, no switch) → report
+ *    'ok'. Rankings put sources other viewers stayed on first, unknown next,
+ *    reported-bad last — so early viewers explore and later ones land on a
+ *    working stream immediately. The UI shows every source the same.
  *
  * Layout:
  *  - Language filter tabs so a viewer of a French match doesn't have to
  *    scroll past 20 English chips.
- *  - Within a language, HD sources are pulled to the front.
  *  - Provider tag is a small dimmed pill on each chip.
  */
 
 const LOAD_GRACE_MS = 12_000;
 const STALL_MS = 60_000;
+const OK_DWELL_MS = 3 * 60_000;
 const LANG_ALL = '__all__';
 
 function sourceKeyOf(s: MatchSource): string {
@@ -34,35 +36,36 @@ function langOf(s: MatchSource): string {
     return (s.language || 'Other').trim();
 }
 
-/** Order within a language group: HD first, then original order. */
-function orderInGroup(list: MatchSource[]): MatchSource[] {
-    return [...list].sort((a, b) => Number(!!b.hd) - Number(!!a.hd));
-}
-
 export default function EmbedMatchPlayer({
     sources,
     title,
     matchKey,
-    initialIndex = 0,
 }: {
     sources: MatchSource[];
     title?: string;
     /** "<category>:<id>" — required to enable sticky bad-source memory. */
     matchKey?: string;
-    initialIndex?: number;
 }) {
     const effectiveMatchKey = matchKey ?? '';
-    const { isBad, markBad, reportToServer } = useBadSources(effectiveMatchKey);
+    const { isBad, goodRank, markBad, reportToServer } = useBadSources(effectiveMatchKey);
 
-    // Global order: good sources first, bad-ranked sources tail. Bad ones are
+    // Global order: proven-good (by crowd score) → unknown → bad. Bad ones are
     // silently deprioritized — never rendered differently.
     const globallyOrdered = useMemo(() => {
         if (!sources?.length) return [];
         const good: MatchSource[] = [];
+        const unknown: MatchSource[] = [];
         const bad: MatchSource[] = [];
-        for (const s of sources) (isBad(sourceKeyOf(s)) ? bad : good).push(s);
-        return [...good, ...bad];
-    }, [sources, isBad]);
+        for (const s of sources) {
+            const key = sourceKeyOf(s);
+            if (isBad(key)) bad.push(s);
+            else if (goodRank(key) !== -1) good.push(s);
+            else unknown.push(s);
+        }
+        good.sort((a, b) => goodRank(sourceKeyOf(a)) - goodRank(sourceKeyOf(b)));
+        unknown.sort((a, b) => Number(!!b.hd) - Number(!!a.hd)); // untested: try HD first
+        return [...good, ...unknown, ...bad];
+    }, [sources, isBad, goodRank]);
 
     // Distinct language tabs, ordered by descending count so the most common
     // language for this match shows first.
@@ -73,41 +76,42 @@ export default function EmbedMatchPlayer({
     }, [globallyOrdered]);
 
     const [lang, setLang] = useState<string>(LANG_ALL);
-    const [activeIndex, setActiveIndex] = useState(initialIndex);
-    const [failed, setFailed] = useState<Set<number>>(new Set());
+    // Tracked by source key, not index: the ranked list reorders when rankings
+    // load or a source is marked bad, and an index would then point elsewhere.
+    // null = "nothing picked yet" → follow the top-ranked source.
+    const [pickedKey, setPickedKey] = useState<string | null>(null);
+    const [failed, setFailed] = useState<Set<string>>(new Set());
     const [showStall, setShowStall] = useState(false);
     const loadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const stallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastActivity = useRef<number>(Date.now());
+    const reportedOk = useRef<Set<string>>(new Set());
 
-    // Visible sources under the current language filter. HD first within.
-    const visible = useMemo(() => {
-        const filtered = lang === LANG_ALL ? globallyOrdered : globallyOrdered.filter((s) => langOf(s) === lang);
-        return orderInGroup(filtered);
-    }, [globallyOrdered, lang]);
+    // Visible sources under the current language filter, in ranked order.
+    const visible = useMemo(
+        () => (lang === LANG_ALL ? globallyOrdered : globallyOrdered.filter((s) => langOf(s) === lang)),
+        [globallyOrdered, lang],
+    );
 
-    // Clamp activeIndex when the visible list changes (language filter, ranker).
-    useEffect(() => {
-        if (activeIndex >= visible.length) setActiveIndex(0);
-    }, [visible.length, activeIndex]);
-
-    const active = visible[activeIndex] ?? null;
+    const active = visible.find((s) => sourceKeyOf(s) === pickedKey) ?? visible[0] ?? null;
+    const activeIndex = active ? visible.indexOf(active) : -1;
     const activeSrc = active ? resolveEmbedUrl(active) : '';
     const activeKey = active ? sourceKeyOf(active) : '';
 
     const advance = useCallback((opts: { report: 'auto-failed' | 'stall' | null }) => {
-        setFailed((prev) => {
-            const next = new Set(prev).add(activeIndex);
-            const candidate = visible.findIndex((_, i) => !next.has(i));
-            if (candidate !== -1) setActiveIndex(candidate);
-            return next;
-        });
+        const nextFailed = new Set(failed).add(activeKey);
+        setFailed(nextFailed);
+        // Next untried source after the current one, wrapping around. Once all
+        // were tried, manual "Try next" keeps cycling; auto-failover stops.
+        const rotated = [...visible.slice(activeIndex + 1), ...visible.slice(0, activeIndex)];
+        const candidate = rotated.find((s) => !nextFailed.has(sourceKeyOf(s))) ?? (opts.report ? undefined : rotated[0]);
+        if (candidate) setPickedKey(sourceKeyOf(candidate));
         if (opts.report && active && effectiveMatchKey) {
             markBad(activeKey);
             reportToServer(activeKey, active.provider ?? 'unknown', opts.report);
         }
         setShowStall(false);
-    }, [activeIndex, visible, active, activeKey, effectiveMatchKey, markBad, reportToServer]);
+    }, [failed, activeIndex, visible, active, activeKey, effectiveMatchKey, markBad, reportToServer]);
 
     const autoAdvance = useCallback((reason: 'auto-failed' | 'stall') => advance({ report: reason }), [advance]);
     const manualSwitch = useCallback(() => advance({ report: null }), [advance]);
@@ -120,6 +124,18 @@ export default function EmbedMatchPlayer({
         return () => {
             if (loadTimer.current) clearTimeout(loadTimer.current);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeSrc]);
+
+    // Success signal: viewer stayed on this source → tell the ranker.
+    useEffect(() => {
+        if (!active || !effectiveMatchKey || reportedOk.current.has(activeKey)) return;
+        const t = setTimeout(() => {
+            if (document.visibilityState !== 'visible') return;
+            reportedOk.current.add(activeKey);
+            reportToServer(activeKey, active.provider ?? 'unknown', 'ok');
+        }, OK_DWELL_MS);
+        return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeSrc]);
 
@@ -251,12 +267,12 @@ export default function EmbedMatchPlayer({
                 {visible.map((s, i) => (
                     <button
                         key={sourceKeyOf(s)}
-                        onClick={() => setActiveIndex(i)}
+                        onClick={() => setPickedKey(sourceKeyOf(s))}
                         className={
                             'text-xs px-3 py-1.5 rounded-md border transition-colors flex items-center gap-2 ' +
                             (i === activeIndex
                                 ? 'border-teal-500 bg-teal-500/10 text-teal-300'
-                                : failed.has(i)
+                                : failed.has(sourceKeyOf(s))
                                     ? 'border-gray-800 bg-gray-900 text-gray-500 hover:text-gray-300'
                                     : 'border-gray-800 bg-gray-900 text-gray-300 hover:border-teal-500/40 hover:text-teal-400')
                         }

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import type { Match, MatchDetail, League, TablesResponse, ScoresResponse, SportCategory } from '../sportsrc';
+import type { Match, MatchDetail, SportCategory } from '../sportsrc';
 import { SportsProvider, TokenBucket } from './base';
 
 /**
@@ -66,18 +66,6 @@ export class SportsrcProvider implements SportsProvider {
         } catch {
             return null;
         }
-    }
-
-    // ---- sportsrc-only endpoints (no equivalent on streamed mirrors) ----
-
-    getLeagues(): Promise<League[]> {
-        return this.get<League[]>({ data: 'results', category: 'leagues' });
-    }
-    getStandings(league: string): Promise<TablesResponse | null> {
-        return this.get<TablesResponse>({ data: 'results', category: 'tables', league });
-    }
-    getScores(league: string): Promise<ScoresResponse> {
-        return this.get<ScoresResponse>({ data: 'results', category: 'scores', league });
     }
 
     private tag(matches: Match[]): Match[] {

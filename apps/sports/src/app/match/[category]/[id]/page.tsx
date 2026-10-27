@@ -60,7 +60,7 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                     <div className="flex items-center justify-between gap-3">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <p className="text-xs uppercase tracking-wider text-gray-500">{cat}</p>
+                                <p className="text-xs uppercase tracking-wider text-gray-500">{detail.league ? `${cat} · ${detail.league}` : cat}</p>
                                 {live ? <LiveBadge /> : null}
                             </div>
                             <h1 className="text-2xl font-bold text-white flex items-center gap-3 flex-wrap">
@@ -68,8 +68,12 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                                     <Image src={home.badge} alt={home.name} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
                                 ) : null}
                                 <span>{home?.name ?? 'Home'}</span>
-                                <span className="text-gray-500 text-base">vs</span>
-                                <span>{away?.name ?? 'Away'}</span>
+                                {away?.name ? (
+                                    <>
+                                        <span className="text-gray-500 text-base">vs</span>
+                                        <span>{away.name}</span>
+                                    </>
+                                ) : null}
                                 {away?.badge ? (
                                     <Image src={away.badge} alt={away.name} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
                                 ) : null}
@@ -110,7 +114,9 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                 </aside>
             </div>
 
-            <MatchCenter home={home?.name} away={away?.name} date={detail.date} />
+            {/* Match center is backed by a football-only API (BSD); on other sports a
+                same-named football fixture could be shown by mistake. */}
+            {cat === 'football' ? <MatchCenter home={home?.name} away={away?.name} date={detail.date} /> : null}
         </div>
     );
 }

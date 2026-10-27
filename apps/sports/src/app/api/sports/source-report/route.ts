@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/sports/source-report
  * Body: { matchKey, sourceKey, providerName, reason }
- * Records that a source didn't work for this user. Aggregated to demote bad
- * sources globally. No PII stored — only country from edge headers.
+ * Records that a source didn't work for this user (or, with reason 'ok', that
+ * they watched it for a while). Aggregated to rank sources globally. No PII stored — only country from edge headers.
  */
 export async function POST(request: NextRequest) {
     try {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         if (typeof matchKey !== 'string' || typeof sourceKey !== 'string' || typeof providerName !== 'string' || typeof reason !== 'string') {
             return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
         }
-        if (!['auto-failed', 'user-report', 'stall'].includes(reason)) {
+        if (!['auto-failed', 'user-report', 'stall', 'ok'].includes(reason)) {
             return NextResponse.json({ error: 'Invalid reason' }, { status: 400 });
         }
         // Trim to sane sizes so a malicious client can't blow up storage.

@@ -1,4 +1,4 @@
-import type { Match, MatchDetail, League, TablesResponse, ScoresResponse, SportCategory, MatchSource } from '../sportsrc';
+import { resolveEmbedUrl, type Match, type MatchDetail, type SportCategory, type MatchSource } from '../sportsrc';
 import { SportsProvider } from './base';
 import { SportsrcProvider } from './sportsrc-provider';
 import { StreamedProvider } from './streamed-provider';
@@ -19,6 +19,12 @@ import { EsportexProvider } from './esportex-provider';
  */
 
 const CONFIG_TTL_MS = 60_000;
+
+/** Display order for sport categories. Unlisted sports go last. */
+export const SPORT_PRIORITY = [
+    'football', 'cricket', 'basketball', 'american-football', 'fight', 'motor-sports',
+    'tennis', 'hockey', 'baseball', 'rugby', 'volleyball', 'badminton', 'other',
+];
 const CALL_TIMEOUT_MS = 12_000;
 
 interface ProviderConfigRow {
@@ -32,7 +38,6 @@ interface ProviderConfigRow {
 }
 
 let providerCache: { at: number; providers: SportsProvider[] } | null = null;
-let sportsrcProviderRef: SportsrcProvider | null = null;
 const failUntil = new Map<string, number>();
 const COOLDOWN_MS = 60_000;
 
@@ -47,11 +52,8 @@ function markOk(name: string) {
 function build(row: ProviderConfigRow): SportsProvider | null {
     try {
         switch (row.kind) {
-            case 'sportsrc': {
-                const p = new SportsrcProvider(row.baseUrl ?? undefined);
-                sportsrcProviderRef = p;
-                return p;
-            }
+            case 'sportsrc':
+                return new SportsrcProvider(row.baseUrl ?? undefined);
             case 'streamed':
                 if (!row.baseUrl) return null;
                 return new StreamedProvider(row.baseUrl, row.name);
@@ -102,10 +104,6 @@ async function getProviders(): Promise<SportsProvider[]> {
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map(build)
         .filter((p): p is SportsProvider => !!p);
-    if (!sportsrcProviderRef) {
-        // Ensure sportsrc-only endpoints always have a reference.
-        sportsrcProviderRef = new SportsrcProvider();
-    }
     providerCache = { at: now, providers };
     return providers;
 }
@@ -113,7 +111,6 @@ async function getProviders(): Promise<SportsProvider[]> {
 /** Called from admin routes after mutating configs. */
 export function refreshProviders() {
     providerCache = null;
-    sportsrcProviderRef = null;
 }
 
 function healthyFirst(all: SportsProvider[]): SportsProvider[] {
@@ -179,7 +176,13 @@ export const sportsrc = {
                 if (!seen.has(key)) seen.set(key, s);
             }
         }
-        return Array.from(seen.values());
+        // Providers emit sports in their own arbitrary order (esportex puts
+        // cricket 12th), which pushed cricket off the homepage and schedule.
+        const rank = (s: SportCategory) => {
+            const i = SPORT_PRIORITY.indexOf((s.category ?? s.id ?? '').toLowerCase());
+            return i === -1 ? SPORT_PRIORITY.length : i;
+        };
+        return Array.from(seen.values()).sort((a, b) => rank(a) - rank(b));
     },
 
     async getMatches(category: string): Promise<Match[]> {
@@ -240,38 +243,21 @@ export const sportsrc = {
             }
         }));
 
-        // Renumber streamNo across the merged set so the player labels are stable.
+        // Mirrors (sportsrc / streamed.*) serve the same underlying embeds, so
+        // dedupe by the URL the player will actually load. streamNo is kept
+        // as-is: it's part of the embed URL and of the stable source key.
+        const seenUrls = new Set<string>();
         return {
             ...anchor,
-            sources: enrichedSources.map((s, i) => ({ ...s, streamNo: i + 1 })),
+            sources: enrichedSources.filter((s) => {
+                const url = resolveEmbedUrl(s);
+                if (seenUrls.has(url)) return false;
+                seenUrls.add(url);
+                return true;
+            }),
         };
     },
 
-    // Leagues / standings / scores exist only on sportsrc; no mirror failover.
-    async getLeagues(): Promise<League[]> {
-        try {
-            await getProviders();
-            return await (sportsrcProviderRef ?? new SportsrcProvider()).getLeagues();
-        } catch {
-            return [];
-        }
-    },
-    async getStandings(league: string): Promise<TablesResponse | null> {
-        try {
-            await getProviders();
-            return await (sportsrcProviderRef ?? new SportsrcProvider()).getStandings(league);
-        } catch {
-            return null;
-        }
-    },
-    async getScores(league: string): Promise<ScoresResponse> {
-        try {
-            await getProviders();
-            return await (sportsrcProviderRef ?? new SportsrcProvider()).getScores(league);
-        } catch {
-            return { live: [], finished: [] };
-        }
-    },
 };
 
 /** Ordered provider names, for diagnostics/UI. Resolves DB-loaded configs. */

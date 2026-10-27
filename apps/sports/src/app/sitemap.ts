@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/seo';
 import { sportsrc } from '@/lib/sportsrc';
+import { CURATED_LEAGUES } from '@/lib/espn';
 
 // Limit per-section to keep sitemap size sane.
 const MATCHES_PER_SPORT = 30;
@@ -27,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.7,
         }));
 
-        const featured = ['football', 'basketball', 'american-football', 'fight', 'tennis'];
+        const featured = ['football', 'cricket', 'basketball', 'american-football', 'fight', 'motor-sports', 'tennis', 'hockey'];
         const matchLists = await Promise.allSettled(
             featured.map((cat) => sportsrc.getMatches(cat)),
         );
@@ -42,21 +43,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             }));
         });
 
-        const leagues = await sportsrc.getLeagues();
-        const leagueUrls: MetadataRoute.Sitemap = leagues.flatMap((l) => [
-            {
-                url: `${SITE_URL}/leagues/${encodeURIComponent(l.id)}/tables`,
-                lastModified: now,
-                changeFrequency: 'daily' as const,
-                priority: 0.6,
-            },
-            {
-                url: `${SITE_URL}/leagues/${encodeURIComponent(l.id)}/scores`,
-                lastModified: now,
-                changeFrequency: 'hourly' as const,
-                priority: 0.6,
-            },
-        ]);
+        const leagueUrls: MetadataRoute.Sitemap = CURATED_LEAGUES.map((l) => ({
+            url: `${SITE_URL}/leagues/${l.sport}/${encodeURIComponent(l.slug)}`,
+            lastModified: now,
+            changeFrequency: 'hourly' as const,
+            priority: 0.7,
+        }));
 
         dynamicUrls = [...sportUrls, ...matchUrls, ...leagueUrls];
     } catch {

@@ -2,19 +2,20 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
-    title: 'Football Leagues — Standings, Tables & Scores',
+    title: 'Leagues & Tournaments — Fixtures, Live Scores & Standings',
     description:
-        'Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Champions League, Eredivisie ' +
-        'and more on Riocut Sports. Full league tables, standings and historical scores updated automatically.',
+        'Premier League, Champions League, IPL, Nepal Premier League, Big Bash, NBA, NFL, Formula 1, UFC and more on ' +
+        'Riocut Sports. Fixtures, live scores, standings and points tables — and watch every match we stream.',
     path: '/leagues',
     keywords: [
-        'football league standings',
+        'league standings',
+        'cricket points table',
+        'IPL points table',
+        'Nepal Premier League live',
         'Premier League table',
-        'La Liga standings',
-        'Bundesliga table',
-        'Serie A standings',
-        'Champions League table',
-        'live football scores',
+        'NBA standings',
+        'F1 standings',
+        'live scores',
     ],
 });
 

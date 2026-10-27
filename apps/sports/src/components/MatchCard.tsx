@@ -9,6 +9,8 @@ export default function MatchCard({ match, category }: { match: Match; category:
     const live = isMatchLive(match);
     const href = `/match/${encodeURIComponent(category)}/${encodeURIComponent(match.id)}`;
     const cat = match.category || category;
+    // Single-sided events (F1 GP, golf) come through with an empty away team.
+    const hasAway = !!match.teams?.away?.name;
 
     return (
         <Link href={href} className="block group">
@@ -34,7 +36,7 @@ export default function MatchCard({ match, category }: { match: Match; category:
                 <div className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                         <span className="inline-flex items-center gap-1 rounded-md bg-gray-800 px-2 py-0.5 text-[11px] font-medium text-gray-400 uppercase">
-                            <Trophy className="h-3 w-3" /> {cat}
+                            <Trophy className="h-3 w-3" /> {match.league && match.league.toLowerCase() !== cat ? match.league : cat}
                         </span>
                         {live && !match.poster ? <LiveBadge /> : null}
                     </div>
@@ -55,8 +57,8 @@ export default function MatchCard({ match, category }: { match: Match; category:
                                 {match.teams?.home?.name ?? 'Home'}
                             </span>
                         </div>
-                        <div className="text-gray-500 text-xs px-1">vs</div>
-                        <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                        {hasAway ? <div className="text-gray-500 text-xs px-1">vs</div> : null}
+                        {hasAway ? <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                             <span className="truncate font-semibold text-white text-sm text-right">
                                 {match.teams?.away?.name ?? 'Away'}
                             </span>
@@ -70,7 +72,7 @@ export default function MatchCard({ match, category }: { match: Match; category:
                                     unoptimized
                                 />
                             ) : null}
-                        </div>
+                        </div> : null}
                     </div>
 
                     <div className="flex items-center gap-1.5 text-xs text-gray-400">

@@ -117,6 +117,8 @@ export class EsportexProvider implements SportsProvider {
                     poster: m.poster ?? null,
                     teams: teamsFromTag(m.tag),
                     provider: this.name,
+                    league: m.league,
+                    endDate: m.endTime ? parseWibKickoff(m.endTime) || undefined : undefined,
                 });
             }
         }
@@ -149,6 +151,8 @@ export class EsportexProvider implements SportsProvider {
                 poster: hit.poster ?? null,
                 teams: teamsFromTag(hit.tag),
                 provider: this.name,
+                league: hit.league,
+                endDate: hit.endTime ? parseWibKickoff(hit.endTime) || undefined : undefined,
                 sources,
             };
         }

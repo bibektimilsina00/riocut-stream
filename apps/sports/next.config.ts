@@ -36,6 +36,18 @@ const nextConfig: NextConfig = {
     reactStrictMode: true,
     output: 'standalone',
     poweredByHeader: false,
+    // Old football-data.org league codes → ESPN league pages (indexed URLs).
+    async redirects() {
+        const codes: Record<string, string> = {
+            PL: 'eng.1', PD: 'esp.1', SA: 'ita.1', BL1: 'ger.1', FL1: 'fra.1', DED: 'ned.1',
+            PPL: 'por.1', ELC: 'eng.2', BSA: 'bra.1', CL: 'uefa.champions', WC: 'fifa.world', EC: 'uefa.euro',
+        };
+        return Object.entries(codes).map(([code, slug]) => ({
+            source: `/leagues/${code}/:tab(tables|scores)`,
+            destination: `/leagues/soccer/${slug}`,
+            permanent: true,
+        }));
+    },
     // PostHog first-party proxy (see packages/analytics).
     skipTrailingSlashRedirect: true,
     async rewrites() {

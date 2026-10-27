@@ -6,7 +6,7 @@ import { useQueries } from '@tanstack/react-query';
 import { useSportsCategories, useLeagues, sportsKeys } from '@/lib/hooks/useSports';
 import { sportsrc, type Match } from '@/lib/sportsrc';
 import SportsTile from '@/components/SportsTile';
-import LeagueCard from '@/components/LeagueCard';
+import Link from 'next/link';
 import MatchCard from '@/components/MatchCard';
 import EmptyState from '@/components/EmptyState';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
@@ -45,10 +45,8 @@ function SearchResults({ q }: { q: string }) {
     ), [sports, term]);
 
     const leagueMatches = useMemo(() => leagues.filter((l) =>
-        (l.name ?? '').toLowerCase().includes(term) ||
-        (l.code ?? '').toLowerCase().includes(term) ||
-        (l.country ?? '').toLowerCase().includes(term) ||
-        (l.id ?? '').toLowerCase().includes(term),
+        l.name.toLowerCase().includes(term) ||
+        l.id.toLowerCase().includes(term),
     ), [leagues, term]);
 
     const matchMatches = useMemo(() => allMatches.filter(({ match: m }) =>
@@ -75,7 +73,7 @@ function SearchResults({ q }: { q: string }) {
             <EmptyState
                 Icon={SearchIcon}
                 title={`No results for "${q}"`}
-                description="Try a sport (football, ufc), team name, or league code (EPL, NBA)."
+                description="Try a sport (football, cricket), team name, or competition (IPL, NBA)."
             />
         );
     }
@@ -98,7 +96,9 @@ function SearchResults({ q }: { q: string }) {
                     <SectionHeader title="Leagues" count={leagueMatches.length} />
                     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {leagueMatches.slice(0, 12).map((l) => (
-                            <LeagueCard key={l.id} id={l.id} name={l.name} />
+                            <Link key={l.id} href={`/leagues/${l.id}`} className="rounded-xl border border-gray-800 bg-gray-900 px-4 py-3 text-sm font-semibold text-white hover:border-teal-500/40">
+                                {l.name}
+                            </Link>
                         ))}
                     </div>
                 </section>

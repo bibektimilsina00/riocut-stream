@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { sportsrc } from '@/lib/sportsrc';
+import { CURATED_LEAGUES, getCurrentLeagues, getScoreboard, getStandings, type EspnLeague } from '@/lib/espn';
 
 export const sportsKeys = {
     all: ['sportsrc'] as const,
@@ -9,8 +10,8 @@ export const sportsKeys = {
     matches: (category: string) => [...sportsKeys.all, 'matches', category] as const,
     matchDetail: (category: string, id: string) => [...sportsKeys.all, 'detail', category, id] as const,
     leagues: () => [...sportsKeys.all, 'leagues'] as const,
-    standings: (league: string) => [...sportsKeys.all, 'standings', league] as const,
-    scores: (league: string) => [...sportsKeys.all, 'scores', league] as const,
+    scoreboard: (sport: string, league: string) => ['espn', 'scoreboard', sport, league] as const,
+    standings: (sport: string, league: string) => ['espn', 'standings', sport, league] as const,
 };
 
 const MIN = 60_000;
@@ -41,28 +42,45 @@ export function useMatchDetail(category: string | undefined, id: string | undefi
     });
 }
 
+/**
+ * Every league/tournament we list: the curated set plus cricket series that
+ * are on right now (ESPN header feed). `id` is "<espn sport>/<slug>", which is
+ * also the /leagues/<id> route.
+ */
 export function useLeagues() {
     return useQuery({
         queryKey: sportsKeys.leagues(),
-        queryFn: () => sportsrc.getLeagues(),
-        staleTime: 60 * MIN,
+        queryFn: async () => {
+            const current = await getCurrentLeagues('cricket').catch((): EspnLeague[] => []);
+            const seen = new Set<string>();
+            return [...CURATED_LEAGUES, ...current]
+                .filter((l) => {
+                    const id = `${l.sport}/${l.slug}`;
+                    if (seen.has(id)) return false;
+                    seen.add(id);
+                    return true;
+                })
+                .map((l) => ({ ...l, id: `${l.sport}/${l.slug}` }));
+        },
+        staleTime: 30 * MIN,
     });
 }
 
-export function useStandings(league: string | undefined) {
+export function useScoreboard(sport: string | undefined, league: string | undefined) {
     return useQuery({
-        queryKey: sportsKeys.standings(league ?? ''),
-        queryFn: () => sportsrc.getStandings(league!),
-        staleTime: 5 * MIN,
-        enabled: !!league,
-    });
-}
-
-export function useScores(league: string | undefined) {
-    return useQuery({
-        queryKey: sportsKeys.scores(league ?? ''),
-        queryFn: () => sportsrc.getScores(league!),
+        queryKey: sportsKeys.scoreboard(sport ?? '', league ?? ''),
+        queryFn: () => getScoreboard(sport!, league!),
         staleTime: 60_000,
-        enabled: !!league,
+        refetchInterval: 60_000,
+        enabled: !!sport && !!league,
+    });
+}
+
+export function useStandings(sport: string | undefined, league: string | undefined) {
+    return useQuery({
+        queryKey: sportsKeys.standings(sport ?? '', league ?? ''),
+        queryFn: () => getStandings(sport!, league!),
+        staleTime: 10 * MIN,
+        enabled: !!sport && !!league,
     });
 }

@@ -29,32 +29,32 @@ export async function GET(request: NextRequest) {
         const [bySource, byProvider, byMatch, byCountry, total] = await Promise.all([
             prisma.sportsSourceReport.groupBy({
                 by: ['sourceKey', 'providerName'],
-                where: { createdAt: { gte: since } },
+                where: { createdAt: { gte: since }, reason: { not: 'ok' } },
                 _count: { sourceKey: true },
                 orderBy: { _count: { sourceKey: 'desc' } },
                 take: 50,
             }),
             prisma.sportsSourceReport.groupBy({
                 by: ['providerName'],
-                where: { createdAt: { gte: since } },
+                where: { createdAt: { gte: since }, reason: { not: 'ok' } },
                 _count: { providerName: true },
                 orderBy: { _count: { providerName: 'desc' } },
             }),
             prisma.sportsSourceReport.groupBy({
                 by: ['matchKey'],
-                where: { createdAt: { gte: since } },
+                where: { createdAt: { gte: since }, reason: { not: 'ok' } },
                 _count: { matchKey: true },
                 orderBy: { _count: { matchKey: 'desc' } },
                 take: 25,
             }),
             prisma.sportsSourceReport.groupBy({
                 by: ['country'],
-                where: { createdAt: { gte: since }, country: { not: null } },
+                where: { createdAt: { gte: since }, reason: { not: 'ok' }, country: { not: null } },
                 _count: { country: true },
                 orderBy: { _count: { country: 'desc' } },
                 take: 25,
             }),
-            prisma.sportsSourceReport.count({ where: { createdAt: { gte: since } } }),
+            prisma.sportsSourceReport.count({ where: { createdAt: { gte: since }, reason: { not: 'ok' } } }),
         ]);
 
         return NextResponse.json({

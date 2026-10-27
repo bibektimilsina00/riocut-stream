@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueries } from '@tanstack/react-query';
 import { useSportsCategories, useLeagues, sportsKeys } from '@/lib/hooks/useSports';
+import { ESPN_SPORTS } from '@/lib/espn';
 import { sportsrc, sortMatches, isMatchLive, type Match } from '@/lib/sportsrc';
 import { Search, Loader2, Radio, CalendarClock, Trophy, Activity } from 'lucide-react';
 
@@ -71,7 +72,7 @@ export default function SearchBox({ variant = 'desktop' }: { variant?: 'desktop'
             .map((m) => ({ m, category: m.category }));
 
         const lg = leagues
-            .filter((l) => (l.name ?? '').toLowerCase().includes(term) || (l.code ?? '').toLowerCase().includes(term))
+            .filter((l) => l.name.toLowerCase().includes(term))
             .slice(0, 4);
         const sp = sports
             .filter((s) => (s.name ?? '').toLowerCase().includes(term) || (s.id ?? '').toLowerCase().includes(term))
@@ -83,7 +84,7 @@ export default function SearchBox({ variant = 'desktop' }: { variant?: 'desktop'
     const flat = useMemo(() => {
         const items: Array<{ href: string; label: string }> = [];
         results.matches.forEach(({ m, category }) => items.push({ href: `/match/${encodeURIComponent(category)}/${encodeURIComponent(m.id)}`, label: m.title }));
-        results.leagues.forEach((l) => items.push({ href: `/leagues/${encodeURIComponent(l.id)}/tables`, label: l.name }));
+        results.leagues.forEach((l) => items.push({ href: `/leagues/${l.id}`, label: l.name }));
         results.sports.forEach((s) => items.push({ href: `/sports/${encodeURIComponent(s.id)}`, label: s.name }));
         return items;
     }, [results]);
@@ -143,8 +144,8 @@ export default function SearchBox({ variant = 'desktop' }: { variant?: 'desktop'
                             </Group>
                             <Group label="Leagues">
                                 {results.leagues.map((l, i) => (
-                                    <Row key={l.id} active={active === results.matches.length + i} onClick={() => go(`/leagues/${encodeURIComponent(l.id)}/tables`)}
-                                        icon={<Trophy className="h-3.5 w-3.5 text-gray-500" />} title={l.name} subtitle={l.country ?? l.code ?? ''} />
+                                    <Row key={l.id} active={active === results.matches.length + i} onClick={() => go(`/leagues/${l.id}`)}
+                                        icon={<Trophy className="h-3.5 w-3.5 text-gray-500" />} title={l.name} subtitle={ESPN_SPORTS.find((x) => x.key === l.sport)?.label ?? ''} />
                                 ))}
                             </Group>
                             <Group label="Sports">

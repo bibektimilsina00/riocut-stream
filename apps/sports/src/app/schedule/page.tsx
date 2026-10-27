@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useSportsCategories, useMatchesByCategory } from '@/lib/hooks/useSports';
 import MatchCard from '@/components/MatchCard';
-import { getMatchKickoff } from '@/lib/sportsrc';
+import { getMatchKickoff, sortMatches } from '@/lib/sportsrc';
 
 function startOfDay(d: Date) {
     const x = new Date(d);
@@ -15,7 +15,7 @@ function ScheduleForCategory({ category, day }: { category: string; day: Date })
     const { data: matches = [] } = useMatchesByCategory(category);
     const dayStart = startOfDay(day).getTime();
     const dayEnd = dayStart + 24 * 60 * 60 * 1000;
-    const filtered = matches.filter((m) => {
+    const filtered = sortMatches(matches).filter((m) => {
         const k = getMatchKickoff(m);
         if (!k) return false;
         const t = k.getTime();
@@ -80,7 +80,7 @@ export default function SchedulePage() {
                 {sports.length === 0 ? (
                     <p className="text-sm text-gray-400">Loading sports…</p>
                 ) : (
-                    sports.slice(0, 8).map((s) => (
+                    sports.map((s) => (
                         <ScheduleForCategory
                             key={(s.id ?? s.name).toString()}
                             category={(s.id ?? s.name ?? '').toString().toLowerCase()}

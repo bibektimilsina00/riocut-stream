@@ -34,6 +34,7 @@ function pruneExpired(store: LocalStore, now: number): LocalStore {
 export function useBadSources(matchKey: string) {
     const [local, setLocal] = useState<LocalStore>({});
     const [globalBad, setGlobalBad] = useState<Set<string>>(new Set());
+    const [globalGood, setGlobalGood] = useState<string[]>([]);
 
     // Hydrate local + fetch global rankings on mount / matchKey change.
     useEffect(() => {
@@ -51,8 +52,9 @@ export function useBadSources(matchKey: string) {
         fetch(`/api/sports/source-rankings?matchKey=${encodeURIComponent(matchKey)}`)
             .then((r) => (r.ok ? r.json() : null))
             .then((d) => {
-                if (cancelled || !d?.badSources) return;
-                setGlobalBad(new Set<string>(d.badSources));
+                if (cancelled || !d) return;
+                if (Array.isArray(d.badSources)) setGlobalBad(new Set<string>(d.badSources));
+                if (Array.isArray(d.goodSources)) setGlobalGood(d.goodSources);
             })
             .catch(() => { /* silently ignore — non-critical */ });
         return () => { cancelled = true; };
@@ -65,6 +67,9 @@ export function useBadSources(matchKey: string) {
         return (local[composite] ?? 0) > Date.now();
     }, [globalBad, local, matchKey]);
 
+    /** Position among sources other viewers stayed on (0 = best), or -1. */
+    const goodRank = useCallback((sourceKey: string): number => globalGood.indexOf(sourceKey), [globalGood]);
+
     const markBad = useCallback((sourceKey: string) => {
         if (typeof window === 'undefined' || !sourceKey) return;
         const composite = `${matchKey}|${sourceKey}`;
@@ -75,7 +80,7 @@ export function useBadSources(matchKey: string) {
         } catch { /* quota / private-mode — ignore */ }
     }, [local, matchKey]);
 
-    const reportToServer = useCallback((sourceKey: string, providerName: string, reason: 'auto-failed' | 'user-report' | 'stall') => {
+    const reportToServer = useCallback((sourceKey: string, providerName: string, reason: 'auto-failed' | 'user-report' | 'stall' | 'ok') => {
         // Fire-and-forget. Never blocks UI.
         if (typeof window === 'undefined') return;
         void fetch('/api/sports/source-report', {
@@ -86,5 +91,5 @@ export function useBadSources(matchKey: string) {
         }).catch(() => { /* ignore */ });
     }, [matchKey]);
 
-    return { isBad, markBad, reportToServer };
+    return { isBad, goodRank, markBad, reportToServer };
 }

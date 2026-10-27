@@ -10,6 +10,7 @@ export const SPORTSRC_BASE_URL = 'https://api.sportsrc.org';
 
 /** Re-exported failover client. Same shape the app has always imported. */
 export { sportsrc, providerNames } from './providers/client';
+import { rankScore } from './popularity';
 
 // ---------- Sports categories ----------
 
@@ -40,6 +41,10 @@ export interface Match {
     };
     /** Which upstream provider served this match. */
     provider?: string;
+    /** Competition name as the provider labels it ("Premier League", "NBA"…). */
+    league?: string;
+    /** Scheduled end, unix ms, when the provider knows it. */
+    endDate?: number;
 }
 
 export interface MatchSource {
@@ -58,77 +63,6 @@ export interface MatchDetail extends Match {
     sources: MatchSource[];
 }
 
-// ---------- Leagues ----------
-
-export interface League {
-    id: string;
-    name: string;
-    code?: string;
-    country?: string;
-}
-
-// ---------- Tables (standings) ----------
-
-export interface StandingTeam {
-    id: number;
-    name: string;
-    shortName?: string;
-    tla?: string;
-    crest?: string;
-}
-
-export interface StandingRow {
-    position: number;
-    team: StandingTeam;
-    playedGames: number;
-    form?: string | null;
-    won: number;
-    draw: number;
-    lost: number;
-    points: number;
-    goalsFor: number;
-    goalsAgainst: number;
-    goalDifference: number;
-}
-
-export interface StandingsGroup {
-    stage: string;
-    type: string;
-    group: string | null;
-    table: StandingRow[];
-}
-
-export interface TablesResponse {
-    filters: { season: string };
-    area: { id: number; name: string; code: string; flag: string };
-    competition: { id: number; name: string; code: string; type: string; emblem: string };
-    season: { id: number; startDate: string; endDate: string; currentMatchday: number; winner: unknown };
-    standings: StandingsGroup[];
-}
-
-// ---------- Scores ----------
-
-export interface ScoreEntry {
-    id?: string | number;
-    utcDate?: string;
-    status?: string;
-    homeTeam?: { id?: number; name?: string; crest?: string };
-    awayTeam?: { id?: number; name?: string; crest?: string };
-    score?: {
-        fullTime?: { home?: number | null; away?: number | null };
-        halfTime?: { home?: number | null; away?: number | null };
-        winner?: string | null;
-    };
-    competition?: { id?: number; name?: string; emblem?: string };
-    [key: string]: unknown;
-}
-
-export interface ScoresResponse {
-    live: ScoreEntry[];
-    finished: ScoreEntry[];
-    last_updated?: string;
-}
-
 // ---------- Helpers ----------
 
 export function matchExternalIdHash(category: string, id: string | number): number {
@@ -144,25 +78,34 @@ export function getMatchKickoff(match: Match | MatchDetail | null | undefined): 
     return Number.isNaN(d.getTime()) ? null : d;
 }
 
+/** Fallback durations when the provider gives no end time. */
+const DEFAULT_DURATION_MS: Record<string, number> = {
+    cricket: 8 * 3600_000, // ponytail: covers T20/ODI; multi-day Tests need a real endDate
+    'motor-sports': 4 * 3600_000,
+};
+
 export function isMatchLive(match: Match | MatchDetail): boolean {
     const kickoff = getMatchKickoff(match);
     if (!kickoff) return false;
     const now = Date.now();
     const startedAt = kickoff.getTime();
-    return now >= startedAt && now <= startedAt + 1000 * 60 * 60 * 3;
+    const endsAt = match.endDate && match.endDate > startedAt
+        ? match.endDate
+        : startedAt + (DEFAULT_DURATION_MS[match.category] ?? 3 * 3600_000);
+    return now >= startedAt && now <= endsAt;
 }
 
 /**
- * Order matches for display: popular/marquee fixtures first (World Cup, big
- * finals — the provider flags these with `popular`), then by kickoff time.
- * The provider returns matches in an arbitrary order, so we sort ourselves.
+ * Order matches for display: most-watched first (league tier + big teams, see
+ * popularity.ts), with a time decay so imminent kickoffs aren't buried by next
+ * week's marquee game. Ties fall back to kickoff time.
  */
 export function sortMatches<T extends Match>(matches: T[]): T[] {
-    return [...matches].sort((a, b) => {
-        const pop = (b.popular ? 1 : 0) - (a.popular ? 1 : 0);
-        if (pop !== 0) return pop;
-        return (a.date ?? 0) - (b.date ?? 0);
-    });
+    const now = Date.now();
+    return [...matches]
+        .map((m) => ({ m, r: rankScore(m, now) }))
+        .sort((a, b) => b.r - a.r || (a.m.date ?? 0) - (b.m.date ?? 0))
+        .map((x) => x.m);
 }
 
 /**
@@ -176,7 +119,10 @@ export function sortMatches<T extends Match>(matches: T[]): T[] {
  * not full ad-block. Falls back to the original `embedUrl` if fields are missing.
  */
 export function resolveEmbedUrl(s: MatchSource): string {
-    if (s.source && s.id && s.streamNo != null) {
+    // Only streamed-family embeds (streamapi.cc wrapper / embed.st) can be
+    // rebuilt; other providers (esportex) reuse `source`/`id` for their own
+    // labels and must keep their real embedUrl.
+    if (/streamapi\.cc|embed\.st|embedsports/.test(s.embedUrl ?? '') && s.source && s.id && s.streamNo != null) {
         return `https://embed.st/embed/${s.source}/${s.id}/${s.streamNo}`;
     }
     return s.embedUrl;
