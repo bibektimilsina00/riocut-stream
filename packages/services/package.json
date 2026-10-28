@@ -17,7 +17,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@riocut/db": "workspace:*"
+    "@riocut/db": "workspace:*",
+    "obscenity": "^0.4.1"
   },
   "peerDependencies": {
     "next": "^15"

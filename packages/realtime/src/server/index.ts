@@ -7,8 +7,21 @@ import {
     removeRoomParticipant,
     saveChatMessage,
     updateRoomActivity,
+    moderateChatMessage,
+    clientIp,
 } from '@riocut/services';
 import { setCommentIo, commentRoom } from './commentBus';
+
+/** Same chat guardrails as the match live chat; refusals go back to the sender only. */
+function moderate(socket: { handshake: { headers: Record<string, string | string[] | undefined>; address: string }; emit: (ev: string, data: unknown) => void }, identity: string, text: unknown) {
+    const header = (name: string) => {
+        const v = socket.handshake.headers[name];
+        return Array.isArray(v) ? v[0] : v;
+    };
+    const mod = moderateChatMessage(identity, clientIp(header) ?? socket.handshake.address, typeof text === 'string' ? text : '');
+    if (!mod.ok) socket.emit('chat-error', { error: mod.error });
+    return mod;
+}
 
 export const config = {
     api: {
@@ -160,8 +173,10 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
 
             // Send chat message
             socket.on('chat-message', ({ partyId, message, userName }) => {
+                const mod = moderate(socket, socket.id, message);
+                if (!mod.ok) return;
                 io.to(partyId).emit('chat-message', {
-                    message,
+                    message: mod.text,
                     userName,
                     timestamp: Date.now(),
                 });
@@ -297,6 +312,9 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
                 const room = watchTogetherRooms.get(roomCode);
                 if (!room) return;
 
+                const mod = moderate(socket, room.participants.get(socket.id)?.userId || socket.id, message?.message);
+                if (!mod.ok) return;
+                message = { ...message, message: mod.text };
                 room.messages.push(message);
 
                 // Send to everyone in the room INCLUDING the sender

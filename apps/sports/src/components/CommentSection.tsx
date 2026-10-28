@@ -152,7 +152,7 @@ export default function CommentSection({ matchKey }: { matchKey: string }) {
     const send = (text: string) => { addComment.mutate({ content: text, parentId: replyTo?.id }); setReplyTo(null); };
 
     return (
-        <section className="flex h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-b from-gray-900 to-gray-950">
+        <section className="flex h-[24rem] lg:h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-b from-gray-900 to-gray-950">
             <header className="flex items-center gap-2 border-b border-gray-800 px-4 py-2.5">
                 <MessageSquare className="h-4 w-4 text-teal-400" />
                 <h3 className="text-sm font-semibold text-white">Live chat</h3>
@@ -191,6 +191,7 @@ export default function CommentSection({ matchKey }: { matchKey: string }) {
                 canPost={canPost}
                 isMember={isMember}
                 submitting={addComment.isPending}
+                error={addComment.error?.message}
                 replyTo={replyTo}
                 onCancelReply={() => setReplyTo(null)}
                 onSend={send}
@@ -273,15 +274,18 @@ function CommentRow({ c, canPost, reply = false, onReact, onDelete, onReply }: {
     );
 }
 
-function ChatInput({ canPost, isMember, submitting, replyTo, onCancelReply, onSend }: {
+function ChatInput({ canPost, isMember, submitting, error, replyTo, onCancelReply, onSend }: {
     canPost: boolean; isMember: boolean; submitting: boolean;
+    /** Server refusal (rate limit, link, …) for the last send. */
+    error?: string;
     replyTo: { id: string; name: string } | null; onCancelReply: () => void; onSend: (text: string) => void;
 }) {
     const [value, setValue] = useState('');
-    const MAX = 500;
+    const MAX = 500; // matches CHAT_MAX_LEN in @riocut/services (server-only package)
     const submit = () => { const v = value.trim(); if (!v || submitting || !canPost) return; onSend(v); setValue(''); };
     return (
         <div className="border-t border-gray-800 bg-gray-950/60 px-3 py-2">
+            {error ? <p role="alert" className="mb-1.5 text-[11px] text-red-400">{error}</p> : null}
             {replyTo ? (
                 <div className="mb-1.5 flex items-center gap-2 text-[11px] text-gray-400">
                     <CornerDownRight className="h-3 w-3" /> Replying to <span className="font-medium text-gray-300">{replyTo.name}</span>

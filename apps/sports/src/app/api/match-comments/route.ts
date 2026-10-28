@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { listMatchComments, createMatchComment, type CommentAuthor } from '@riocut/services';
+import { listMatchComments, createMatchComment, moderateChatMessage, clientIp, type CommentAuthor } from '@riocut/services';
 import { emitComment } from '@riocut/realtime/commentBus';
 
 export const runtime = 'nodejs';
@@ -59,8 +59,12 @@ export async function POST(req: NextRequest) {
     if (!author) return NextResponse.json({ error: 'Missing identity' }, { status: 401 });
     if (!body.matchKey || !body.content?.trim()) return NextResponse.json({ error: 'Missing matchKey or content' }, { status: 400 });
 
+    // Anyone can post anonymously: rate-limit by identity + IP, block links, mask abuse.
+    const mod = moderateChatMessage(author.authorKey, clientIp((h) => req.headers.get(h)), body.content);
+    if (!mod.ok) return NextResponse.json({ error: mod.error }, { status: 429 });
+
     try {
-        const comment = await createMatchComment(author, { matchKey: body.matchKey, content: body.content, parentId: body.parentId ?? null });
+        const comment = await createMatchComment(author, { matchKey: body.matchKey, content: mod.text, parentId: body.parentId ?? null });
         emitComment(body.matchKey, 'comment:new', comment);
         return NextResponse.json({ comment }, { status: 201 });
     } catch (err) {
