@@ -94,12 +94,11 @@ export default function Navigation() {
                         <Image
                             src="/logo.svg"
                             alt="RioSports"
-                            width={566}
-                                height={118}
+                            width={810}
+                                height={132}
                             className="h-7 w-auto block group-hover:scale-105 transition-transform duration-300"
                             priority
                         />
-                        <span className="text-teal-400 font-semibold text-lg leading-none">Sports</span>
                     </Link>
 
                     <nav className="hidden lg:flex items-end gap-1 xl:gap-2">

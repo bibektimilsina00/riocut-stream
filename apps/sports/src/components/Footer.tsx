@@ -17,11 +17,10 @@ export default function Footer() {
                             <Image
                                 src="/logo.svg"
                                 alt="RioSports"
-                                width={566}
-                                height={118}
+                                width={810}
+                                height={132}
                                 className="h-8 w-auto block group-hover:scale-105 transition-transform duration-300"
                             />
-                            <span className="text-teal-400 font-semibold text-lg leading-none">Sports</span>
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed">
                             Live sports streaming — football, cricket, basketball, UFC and more. Schedules, scores, standings.

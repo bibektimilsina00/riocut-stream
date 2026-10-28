@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, SkipForward } from 'lucide-react';
 import { resolveEmbedUrl, type MatchSource } from '@/lib/sportsrc';
 import { useBadSources } from '@/lib/hooks/useBadSources';
+import HlsVideo from './HlsVideo';
 
 /**
  * Multi-source player with automatic + user-driven failover.
@@ -187,17 +188,27 @@ export default function EmbedMatchPlayer({
     return (
         <div className="space-y-3">
             <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-gray-800">
-                <iframe
-                    key={activeSrc}
-                    src={activeSrc}
-                    title={title ?? 'Live stream'}
-                    className="absolute inset-0 h-full w-full"
-                    allow="encrypted-media; picture-in-picture; fullscreen; autoplay"
-                    allowFullScreen
-                    referrerPolicy="origin"
-                    onLoad={onLoad}
-                    onError={() => autoAdvance('auto-failed')}
-                />
+                {/\.m3u8(\?|$)/.test(activeSrc) ? (
+                    <HlsVideo
+                        key={activeSrc}
+                        src={activeSrc}
+                        title={title ?? 'Live stream'}
+                        onReady={onLoad}
+                        onFatal={() => autoAdvance('auto-failed')}
+                    />
+                ) : (
+                    <iframe
+                        key={activeSrc}
+                        src={activeSrc}
+                        title={title ?? 'Live stream'}
+                        className="absolute inset-0 h-full w-full"
+                        allow="encrypted-media; picture-in-picture; fullscreen; autoplay"
+                        allowFullScreen
+                        referrerPolicy="origin"
+                        onLoad={onLoad}
+                        onError={() => autoAdvance('auto-failed')}
+                    />
+                )}
 
                 {showStall && (
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full bg-black/90 border border-yellow-500/40 px-4 py-2 shadow-xl">

@@ -3,6 +3,7 @@ import { SportsProvider } from './base';
 import { SportsrcProvider } from './sportsrc-provider';
 import { StreamedProvider } from './streamed-provider';
 import { EsportexProvider } from './esportex-provider';
+import { YonoProvider } from './yono-provider';
 import { sportRank } from '../sports';
 
 /**
@@ -55,6 +56,8 @@ function build(row: ProviderConfigRow): SportsProvider | null {
                 return new StreamedProvider(row.baseUrl, row.name);
             case 'esportex':
                 return new EsportexProvider(row.baseUrl ?? undefined, row.name);
+            case 'yono':
+                return new YonoProvider(row.baseUrl ?? undefined, row.name);
             default:
                 console.warn(`[sports] unknown provider kind "${row.kind}"`);
                 return null;
@@ -88,6 +91,7 @@ const DEFAULT_ROWS: ProviderConfigRow[] = [
     { id: 'd_streamed_pk', kind: 'streamed', name: 'streamed.pk', baseUrl: 'https://streamed.pk', apiKey: null, isEnabled: true, sortOrder: 1 },
     { id: 'd_streamed_st', kind: 'streamed', name: 'streamed.st', baseUrl: 'https://streamed.st', apiKey: null, isEnabled: true, sortOrder: 2 },
     { id: 'd_esportex', kind: 'esportex', name: 'esportex', baseUrl: 'https://api.esportex.site', apiKey: null, isEnabled: true, sortOrder: 3 },
+    { id: 'd_yono', kind: 'yono', name: 'yono', baseUrl: 'https://yonotv-data.pages.dev', apiKey: null, isEnabled: true, sortOrder: 4 },
 ];
 
 async function getProviders(): Promise<SportsProvider[]> {

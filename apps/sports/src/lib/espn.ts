@@ -247,6 +247,10 @@ const STOP = new Set([
     'sporting', 'athletic', 'women', 'men', 'team', 'cricket', 'grand', 'prix', 'npl', 'ipl',
 ]);
 
+function compact(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 function tokens(s: string): string[] {
     return s
         .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -270,8 +274,10 @@ export function findStream(event: EspnEvent, matches: Match[]): Match | null {
         if (Math.abs((m.date ?? 0) - event.date) > MATCH_WINDOW_MS) continue;
         const title = new Set(tokens(`${m.title} ${m.teams?.home?.name ?? ''} ${m.teams?.away?.name ?? ''}`));
         if (event.competitors.length === 2) {
+            // Also match spacing variants: Yono's "Sudurpaschim" vs ESPN's "Sudur Paschim Royals".
             const sideHit = (c: EspnCompetitor) =>
-                [c.name, c.shortName ?? ''].some((n) => tokens(n).some((t) => title.has(t)));
+                [c.name, c.shortName ?? ''].some((n) => tokens(n).some((t) => title.has(t))) ||
+                [...title].some((t) => t.length >= 5 && compact(c.name).includes(t));
             if (event.competitors.every(sideHit)) return m;
         } else if (tokens(event.name).filter((t) => title.has(t)).length >= 2) {
             return m;

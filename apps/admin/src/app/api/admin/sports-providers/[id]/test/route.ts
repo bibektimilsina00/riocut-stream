@@ -16,6 +16,7 @@ const DEFAULTS: Record<string, string> = {
     sportsrc: 'https://api.sportsrc.org',
     streamed: 'https://streamed.pk',
     esportex: 'https://api.esportex.site',
+    yono: 'https://yonotv-data.pages.dev',
 };
 
 function pingUrl(kind: string, baseUrl: string): string {
@@ -24,6 +25,7 @@ function pingUrl(kind: string, baseUrl: string): string {
         case 'sportsrc': return `${b}/?data=sports`;
         case 'streamed': return `${b}/api/sports`;
         case 'esportex': return `${b}/api/streams?cache=${Date.now()}`;
+        case 'yono': return `${b}/api2.json`;
         default: return `${b}/`;
     }
 }
