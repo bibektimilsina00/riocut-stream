@@ -1,3 +1,5 @@
+import SportHeader from '@/components/SportHeader';
+import { sportByEspn } from '@/lib/sports';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import { CURATED_LEAGUES, espnSport } from '@/lib/espn';
@@ -14,12 +16,24 @@ export async function generateMetadata({
         title: `${name} — Live Scores, Fixtures & Standings`,
         description:
             `${name} fixtures, live scores, results and standings, updated automatically. ` +
-            `Watch ${name} matches live on Riocut Sports.`,
+            `Watch ${name} matches live on RioSports.`,
         path: `/leagues/${sport}/${league}`,
         keywords: [`${name} live`, `${name} live stream`, `${name} standings`, `${name} fixtures`, `${name} scores`],
     });
 }
 
-export default function LeagueLayout({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
+export default async function LeagueLayout({
+    children,
+    params,
+}: {
+    children: React.ReactNode;
+    params: Promise<{ sport: string; league: string }>;
+}) {
+    const category = sportByEspn((await params).sport)?.category;
+    return (
+        <>
+            {category ? <SportHeader category={category} /> : null}
+            {children}
+        </>
+    );
 }

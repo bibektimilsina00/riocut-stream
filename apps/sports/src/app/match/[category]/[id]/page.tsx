@@ -2,6 +2,7 @@
 
 import { use } from 'react';
 import Link from 'next/link';
+import { sportMeta } from '@/lib/sports';
 import Image from 'next/image';
 import { useMatchDetail } from '@/lib/hooks/useSports';
 import { getMatchKickoff, isMatchLive } from '@/lib/sportsrc';
@@ -46,10 +47,10 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
     return (
         <div className="container mx-auto px-4 py-6 space-y-6">
             <Link href={`/sports/${cat}`} className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-teal-400">
-                <ArrowLeft className="h-3 w-3" /> Back to {cat.replace(/-/g, ' ')}
+                <ArrowLeft className="h-3 w-3" /> Back to {sportMeta(cat).label}
             </Link>
 
-            <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
                 <div className="space-y-4">
                     <EmbedMatchPlayer
                         sources={detail.sources ?? []}
@@ -60,7 +61,7 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                     <div className="flex items-center justify-between gap-3">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <p className="text-xs uppercase tracking-wider text-gray-500">{detail.league ? `${cat} · ${detail.league}` : cat}</p>
+                                <p className="text-xs uppercase tracking-wider text-gray-500">{detail.league ? `${sportMeta(cat).label} · ${detail.league}` : sportMeta(cat).label}</p>
                                 {live ? <LiveBadge /> : null}
                             </div>
                             <h1 className="text-2xl font-bold text-white flex items-center gap-3 flex-wrap">

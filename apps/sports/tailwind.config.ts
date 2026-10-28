@@ -8,6 +8,7 @@ const config: Config = {
         './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
         './src/components/**/*.{js,ts,jsx,tsx,mdx}',
         './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+        './src/lib/sports.ts',
         '../../packages/ui/src/**/*.{js,ts,jsx,tsx,mdx}',
         '../../packages/auth/src/**/*.{js,ts,jsx,tsx,mdx}',
         '../../packages/realtime/src/**/*.{js,ts,jsx,tsx,mdx}',

@@ -341,7 +341,7 @@ export default function Navigation() {
 
                                                 {/* Apps */}
                                                 <MenuSection label="More from Riocut">
-                                                    <MenuExternal href={process.env.NEXT_PUBLIC_RIOCUT_SPORTS_URL || 'https://sports.riocut.com'} icon={Activity} label="Live Sports" sub="Riocut Sports" />
+                                                    <MenuExternal href={process.env.NEXT_PUBLIC_RIOCUT_SPORTS_URL || 'https://sports.riocut.com'} icon={Activity} label="Live Sports" sub="RioSports" />
                                                     <MenuExternal href={process.env.NEXT_PUBLIC_RIOCUT_TV_URL || 'https://tv.riocut.com'} icon={Tv} label="Live TV" sub="Riocut TV" />
                                                     <MenuExternal href={process.env.NEXT_PUBLIC_BLOG_URL || process.env.NEXT_PUBLIC_BLOG_SITE_URL || 'https://blog.riocut.com'} icon={BookOpen} label="Blog" />
                                                 </MenuSection>

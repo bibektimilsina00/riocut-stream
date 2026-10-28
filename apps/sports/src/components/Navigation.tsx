@@ -6,10 +6,10 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import SearchBox from './SearchBox';
+import { SPORTS, sportFromPath, sportMeta } from '@/lib/sports';
 import {
     Activity,
     Trophy,
-    Medal,
     CalendarDays,
     ListVideo,
     BookOpen,
@@ -33,6 +33,8 @@ interface NavLink {
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     external?: boolean;
+    /** Emoji of the sport this link is scoped to. */
+    badge?: string;
 }
 
 export default function Navigation() {
@@ -45,6 +47,7 @@ export default function Navigation() {
     const userMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
 
     useEffect(() => {
         const onClick = (e: MouseEvent) => {
@@ -56,15 +59,21 @@ export default function Navigation() {
         return () => document.removeEventListener('mousedown', onClick);
     }, [userMenuOpen]);
 
-    const navLinks = useMemo<NavLink[]>(() => [
-        { href: '/sports', label: 'Sports', icon: Activity },
-        { href: '/schedule', label: 'Schedule', icon: CalendarDays },
-        { href: '/leagues', label: 'Leagues', icon: Trophy },
-        { href: '/worldcup', label: 'World Cup', icon: Medal },
-        { href: '/watchlist', label: 'Watchlist', icon: ListVideo },
-        { href: RIOCUT_URL, label: 'Movies & TV', icon: Film, external: true },
-        { href: BLOG_URL, label: 'Blog', icon: BookOpen, external: true },
-    ], []);
+    // Inside a sport (hub, match, league, football data pages) Schedule and
+    // Leagues point at that sport; elsewhere they cover every sport.
+    const sport = sportFromPath(pathname);
+    const meta = sport ? sportMeta(sport) : null;
+    const navLinks = useMemo<NavLink[]>(() => {
+        const base = meta ? `/sports/${encodeURIComponent(meta.category)}` : null;
+        return [
+            { href: '/sports', label: 'All Sports', icon: Activity },
+            { href: base ? `${base}/schedule` : '/schedule', label: 'Schedule', icon: CalendarDays, badge: meta?.emoji },
+            { href: base && meta?.espn ? `${base}/leagues` : '/leagues', label: 'Leagues', icon: Trophy, badge: meta?.espn ? meta.emoji : undefined },
+            { href: '/watchlist', label: 'Watchlist', icon: ListVideo },
+            { href: RIOCUT_URL, label: 'Movies & TV', icon: Film, external: true },
+            { href: BLOG_URL, label: 'Blog', icon: BookOpen, external: true },
+        ];
+    }, [meta]);
 
     const handleSignOut = useCallback(async () => {
         setIsSigningOut(true);
@@ -84,7 +93,7 @@ export default function Navigation() {
                     <Link href="/" className="flex items-center gap-2 group shrink-0 mb-2">
                         <Image
                             src="/logo.svg"
-                            alt="Riocut Sports"
+                            alt="RioSports"
                             width={566}
                                 height={118}
                             className="h-7 w-auto block group-hover:scale-105 transition-transform duration-300"
@@ -93,7 +102,7 @@ export default function Navigation() {
                         <span className="text-teal-400 font-semibold text-lg leading-none">Sports</span>
                     </Link>
 
-                    <nav className="hidden lg:flex items-end gap-4">
+                    <nav className="hidden lg:flex items-end gap-1 xl:gap-2">
                         {navLinks.map((link) => {
                             const Icon = link.icon;
                             const isActive = mounted && !link.external && pathname === link.href;
@@ -105,10 +114,12 @@ export default function Navigation() {
                                         href={link.href}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        title={link.label}
+                                        aria-label={link.label}
                                         className={baseClass + ' text-gray-300 hover:text-teal-400 hover:bg-gray-800/50'}
                                     >
+                                        {/* Sister sites stay icon-only so the sport links keep room. */}
                                         <Icon className="w-4 h-4" />
-                                        <span className="hidden xl:inline">{link.label}</span>
                                     </a>
                                 );
                             }
@@ -120,6 +131,7 @@ export default function Navigation() {
                                 >
                                     <Icon className="w-4 h-4" />
                                     <span className="hidden xl:inline">{link.label}</span>
+                                    {link.badge ? <span className="text-xs" aria-hidden>{link.badge}</span> : null}
                                 </Link>
                             );
                         })}
@@ -199,7 +211,7 @@ export default function Navigation() {
                                                 </div>
 
                                                 <p className="px-4 pt-2 pb-1 text-[10px] text-gray-600 text-center">
-                                                    Riocut Sports · v{process.env.NEXT_PUBLIC_BUILD_VERSION?.slice(0, 12) || 'dev'}
+                                                    RioSports · v{process.env.NEXT_PUBLIC_BUILD_VERSION?.slice(0, 12) || 'dev'}
                                                 </p>
                                             </div>
                                         )}
@@ -226,6 +238,8 @@ export default function Navigation() {
                     </div>
                 </div>
 
+                <SportStrip active={sport} home={pathname === '/'} />
+
                 {mobileMenuOpen && (
                     <div className="lg:hidden mt-3 pb-3 border-t border-gray-800 pt-3 space-y-1">
                         {navLinks.map((link) => {
@@ -241,7 +255,7 @@ export default function Navigation() {
                             }
                             return (
                                 <Link key={link.href} href={link.href} className={linkClass} onClick={() => setMobileMenuOpen(false)}>
-                                    <Icon className="w-4 h-4" /> {link.label}
+                                    <Icon className="w-4 h-4" /> {link.badge ? `${meta?.label} ${link.label}` : link.label}
                                 </Link>
                             );
                         })}
@@ -330,5 +344,26 @@ function MenuExternal({
             <span className="flex-1 truncate">{label}</span>
             {sub ? <span className="text-[10px] text-gray-500 uppercase tracking-wider">{sub}</span> : null}
         </a>
+    );
+}
+
+// ponytail: first 9 registry sports cover everything ESPN tracks; the rest
+// are one tap away under "All Sports".
+const STRIP = SPORTS.slice(0, 9);
+
+/** Always-visible sport switcher: the main way into a sport's hub. */
+function SportStrip({ active, home }: { active: string | null; home: boolean }) {
+    const chip = 'shrink-0 flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs whitespace-nowrap transition-colors';
+    const on = 'border-teal-500/50 bg-teal-500/15 text-teal-200';
+    const off = 'border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-200';
+    return (
+        <nav aria-label="Sports" className="mt-1 flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Link href="/" className={`${chip} ${home ? on : off}`}>Live</Link>
+            {STRIP.map((s) => (
+                <Link key={s.category} href={`/sports/${s.category}`} className={`${chip} ${active === s.category ? on : off}`}>
+                    <span aria-hidden>{s.emoji}</span> {s.label}
+                </Link>
+            ))}
+        </nav>
     );
 }

@@ -5,7 +5,7 @@ export const metadata: Metadata = pageMetadata({
     title: 'Leagues & Tournaments — Fixtures, Live Scores & Standings',
     description:
         'Premier League, Champions League, IPL, Nepal Premier League, Big Bash, NBA, NFL, Formula 1, UFC and more on ' +
-        'Riocut Sports. Fixtures, live scores, standings and points tables — and watch every match we stream.',
+        'RioSports. Fixtures, live scores, standings and points tables — and watch every match we stream.',
     path: '/leagues',
     keywords: [
         'league standings',

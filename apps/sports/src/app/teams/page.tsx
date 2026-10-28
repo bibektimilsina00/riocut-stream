@@ -43,14 +43,14 @@ export default function TeamsPage() {
             </label>
 
             {isLoading ? (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {Array.from({ length: 12 }).map((_, i) => <div key={i} className="h-[70px] rounded-xl bg-gray-900 animate-pulse" />)}
                 </div>
             ) : teams.length === 0 ? (
                 <EmptyState Icon={Search} title={name ? `No teams for "${name}"` : 'No teams'} description="Try another name." />
             ) : (
                 <>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {teams.map((t) => <TeamCard key={t.id} team={t} />)}
                     </div>
                     <div className="flex items-center justify-between pt-2">

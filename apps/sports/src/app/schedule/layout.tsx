@@ -4,7 +4,7 @@ import { pageMetadata } from '@/lib/seo';
 export const metadata: Metadata = pageMetadata({
     title: 'Sports Schedule — Today, Tomorrow & This Week',
     description:
-        'Live and upcoming sports matches across the next 7 days on Riocut Sports. ' +
+        'Live and upcoming sports matches across the next 7 days on RioSports. ' +
         'Football, basketball, UFC, tennis and more — sorted by sport and kickoff time.',
     path: '/schedule',
     keywords: [

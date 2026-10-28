@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Account — Riocut Sports',
-    description: 'Manage your Riocut Sports profile and password.',
+    title: 'Account — RioSports',
+    description: 'Manage your RioSports profile and password.',
     robots: { index: false, follow: false },
 };
 

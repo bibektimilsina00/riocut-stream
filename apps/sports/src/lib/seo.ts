@@ -1,5 +1,5 @@
 /**
- * Centralised SEO helpers for Riocut Sports — keep titles, descriptions and
+ * Centralised SEO helpers for RioSports — keep titles, descriptions and
  * keyword sets here so per-route `generateMetadata` stays short.
  */
 import type { Metadata } from 'next';
@@ -8,14 +8,14 @@ export const SITE_URL =
     process.env.NEXT_PUBLIC_RIOCUT_SPORTS_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
     'https://sports.riocut.com';
-export const SITE_NAME = 'Riocut Sports';
+export const SITE_NAME = 'RioSports';
 export const TWITTER_HANDLE = '@riocut';
 
 const BASE_KEYWORDS = [
     'live sports streaming',
     'free live sports',
     'watch sports online',
-    'Riocut Sports',
+    'RioSports',
     'football live stream',
     'basketball live stream',
     'NBA live stream',

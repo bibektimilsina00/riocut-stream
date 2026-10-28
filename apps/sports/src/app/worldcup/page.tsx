@@ -52,7 +52,7 @@ export default function WorldCupPage() {
                     {byRound.map(([round, list]) => (
                         <section key={round} className="space-y-3">
                             <h2 className="text-lg font-semibold text-white">{round}</h2>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 {list.map((f) => <FixtureCard key={f.id} f={f} />)}
                             </div>
                         </section>
@@ -62,7 +62,7 @@ export default function WorldCupPage() {
                         <section className="space-y-3">
                             <h2 className="flex items-center gap-2 text-lg font-semibold text-white"><Star className="h-5 w-5 text-yellow-400" /> Squad standouts</h2>
                             <p className="text-xs text-gray-500">Most international goals among qualified squads.</p>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 {standouts.map((p, i) => <StandoutCard key={`${p.playerId}-${i}`} p={p} />)}
                             </div>
                         </section>

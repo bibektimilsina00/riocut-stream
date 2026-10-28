@@ -55,7 +55,7 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-semibold mb-4 text-lg">About</h3>
                         <p className="text-gray-400 text-sm leading-relaxed">
-                            One account across Riocut, Riocut Sports and Riocut TV. Channel data via the iptv-org project.
+                            One account across Riocut, RioSports and Riocut TV. Channel data via the iptv-org project.
                         </p>
                     </div>
                 </div>

@@ -122,7 +122,7 @@ function ProfileForm({ account, onUpdated }: { account: Account; onUpdated: (a: 
     };
 
     return (
-        <Section title="Profile" description="Update how your name appears across Riocut Sports.">
+        <Section title="Profile" description="Update how your name appears across RioSports.">
             <form onSubmit={submit} className="space-y-3">
                 <Field icon={User} label="Display name">
                     <input

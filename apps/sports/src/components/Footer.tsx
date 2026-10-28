@@ -16,7 +16,7 @@ export default function Footer() {
                         <Link href="/" className="flex items-center gap-2 group">
                             <Image
                                 src="/logo.svg"
-                                alt="Riocut Sports"
+                                alt="RioSports"
                                 width={566}
                                 height={118}
                                 className="h-8 w-auto block group-hover:scale-105 transition-transform duration-300"
@@ -24,7 +24,7 @@ export default function Footer() {
                             <span className="text-teal-400 font-semibold text-lg leading-none">Sports</span>
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed">
-                            Live sports streaming — football, basketball, UFC, MMA. Schedules, scores, standings.
+                            Live sports streaming — football, cricket, basketball, UFC and more. Schedules, scores, standings.
                         </p>
                         <div className="flex gap-3">
                             <SocialLink href="https://instagram.com/riocut" icon={Instagram} label="Instagram" />
@@ -55,13 +55,13 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-semibold mb-4 text-lg">About</h3>
                         <p className="text-gray-400 text-sm leading-relaxed">
-                            One account across Riocut and Riocut Sports. Stream data via sportsrc.org.
+                            One account across Riocut and RioSports. Stream data via sportsrc.org.
                         </p>
                     </div>
                 </div>
 
                 <div className="border-t border-gray-800 mt-10 pt-6 text-center text-xs text-gray-500">
-                    &copy; {year} Riocut Network. Riocut Sports is part of the Riocut family.
+                    &copy; {year} Riocut Network. RioSports is part of the Riocut family.
                 </div>
             </div>
         </footer>

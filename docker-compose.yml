@@ -72,7 +72,7 @@ services:
       dockerfile: docker/Dockerfile.app
       args:
         APP_NAME: sports
-        NEXT_PUBLIC_APP_NAME: Riocut Sports
+        NEXT_PUBLIC_APP_NAME: RioSports
         NEXT_PUBLIC_APP_URL: ${RIOCUT_SPORTS_URL:-https://sports.riocut.com}
         NEXT_PUBLIC_BLOG_SITE_URL: ${NEXT_PUBLIC_BLOG_SITE_URL:-}
         NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL:-https://riocut.com}
@@ -99,7 +99,7 @@ services:
       AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
       AUTH_URL: ${RIOCUT_SPORTS_AUTH_URL:-${RIOCUT_SPORTS_URL:-https://sports.riocut.com}}
       NEXTAUTH_URL: ${RIOCUT_SPORTS_AUTH_URL:-${RIOCUT_SPORTS_URL:-https://sports.riocut.com}}
-      NEXT_PUBLIC_APP_NAME: Riocut Sports
+      NEXT_PUBLIC_APP_NAME: RioSports
       NEXT_PUBLIC_APP_URL: ${RIOCUT_SPORTS_URL}
       NEXT_PUBLIC_RIOCUT_URL: ${RIOCUT_URL}
       NEXT_PUBLIC_RIOCUT_SPORTS_URL: ${RIOCUT_SPORTS_URL}

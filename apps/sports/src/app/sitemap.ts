@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/seo';
 import { sportsrc } from '@/lib/sportsrc';
 import { CURATED_LEAGUES } from '@/lib/espn';
+import { sportMeta } from '@/lib/sports';
 
 // Limit per-section to keep sitemap size sane.
 const MATCHES_PER_SPORT = 30;
@@ -21,12 +22,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let dynamicUrls: MetadataRoute.Sitemap = [];
     try {
         const sports = await sportsrc.getSports();
-        const sportUrls: MetadataRoute.Sitemap = sports.map((s) => ({
-            url: `${SITE_URL}/sports/${encodeURIComponent(s.id)}`,
-            lastModified: now,
-            changeFrequency: 'hourly',
-            priority: 0.7,
-        }));
+        const sportUrls: MetadataRoute.Sitemap = sports.flatMap((s) => {
+            const hub = `${SITE_URL}/sports/${encodeURIComponent(s.id)}`;
+            return [
+                { url: hub, lastModified: now, changeFrequency: 'hourly' as const, priority: 0.8 },
+                { url: `${hub}/schedule`, lastModified: now, changeFrequency: 'hourly' as const, priority: 0.6 },
+                ...(sportMeta(s.id).espn ? [{ url: `${hub}/leagues`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.6 }] : []),
+            ];
+        });
 
         const featured = ['football', 'cricket', 'basketball', 'american-football', 'fight', 'motor-sports', 'tennis', 'hockey'];
         const matchLists = await Promise.allSettled(

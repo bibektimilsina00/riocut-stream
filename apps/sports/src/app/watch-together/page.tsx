@@ -798,7 +798,7 @@ function WatchTogetherContent() {
         }
     };
 
-    // Riocut Sports rooms use a single embed URL provided by sportsrc.
+    // RioSports rooms use a single embed URL provided by sportsrc.
     // Source switching is not available here.
 
     const leaveRoom = () => {

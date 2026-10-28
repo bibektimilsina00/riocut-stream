@@ -3,6 +3,7 @@ import { SportsProvider } from './base';
 import { SportsrcProvider } from './sportsrc-provider';
 import { StreamedProvider } from './streamed-provider';
 import { EsportexProvider } from './esportex-provider';
+import { sportRank } from '../sports';
 
 /**
  * Multi-provider client with cross-provider list merge.
@@ -20,11 +21,6 @@ import { EsportexProvider } from './esportex-provider';
 
 const CONFIG_TTL_MS = 60_000;
 
-/** Display order for sport categories. Unlisted sports go last. */
-export const SPORT_PRIORITY = [
-    'football', 'cricket', 'basketball', 'american-football', 'fight', 'motor-sports',
-    'tennis', 'hockey', 'baseball', 'rugby', 'volleyball', 'badminton', 'other',
-];
 const CALL_TIMEOUT_MS = 12_000;
 
 interface ProviderConfigRow {
@@ -178,10 +174,7 @@ export const sportsrc = {
         }
         // Providers emit sports in their own arbitrary order (esportex puts
         // cricket 12th), which pushed cricket off the homepage and schedule.
-        const rank = (s: SportCategory) => {
-            const i = SPORT_PRIORITY.indexOf((s.category ?? s.id ?? '').toLowerCase());
-            return i === -1 ? SPORT_PRIORITY.length : i;
-        };
+        const rank = (s: SportCategory) => sportRank((s.category ?? s.id ?? '').toLowerCase());
         return Array.from(seen.values()).sort((a, b) => rank(a) - rank(b));
     },
 

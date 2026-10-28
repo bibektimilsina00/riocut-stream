@@ -36,7 +36,7 @@ export default function PlayerNotice() {
                 </div>
 
                 {/* CTA grid */}
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {/* uBlock card */}
                     <a
                         href={UBLOCK_URL}

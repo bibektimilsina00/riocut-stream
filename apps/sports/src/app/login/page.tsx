@@ -84,7 +84,7 @@ function LoginForm() {
                     {/* Logo + heading */}
                     <div className="flex flex-col items-center text-center space-y-3">
                         <div className="flex items-center gap-2 leading-none">
-                            <Image src="/logo.svg" alt="Riocut Sports" width={566} height={118} className="h-8 w-auto" priority />
+                            <Image src="/logo.svg" alt="RioSports" width={566} height={118} className="h-8 w-auto" priority />
                             <span className="text-teal-400 font-semibold text-lg leading-none">Sports</span>
                         </div>
                         <div className="space-y-1">

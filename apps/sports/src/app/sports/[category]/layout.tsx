@@ -1,3 +1,4 @@
+import SportHeader from '@/components/SportHeader';
 import type { Metadata } from 'next';
 import { pageMetadata, SITE_NAME } from '@/lib/seo';
 
@@ -24,6 +25,18 @@ export async function generateMetadata({
     });
 }
 
-export default function CategoryLayout({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
+export default async function CategoryLayout({
+    children,
+    params,
+}: {
+    children: React.ReactNode;
+    params: Promise<{ category: string }>;
+}) {
+    const { category } = await params;
+    return (
+        <>
+            <SportHeader category={decodeURIComponent(category)} />
+            {children}
+        </>
+    );
 }

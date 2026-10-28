@@ -1,3 +1,4 @@
+import SportHeader from '@/components/SportHeader';
 import type { Metadata } from 'next';
 import { pageMetadata, SITE_NAME } from '@/lib/seo';
 
@@ -9,5 +10,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PlayersLayout({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
+    return (
+        <>
+            <SportHeader category="football" />
+            {children}
+        </>
+    );
 }

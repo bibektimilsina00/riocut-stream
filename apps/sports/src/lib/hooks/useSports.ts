@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { sportsrc } from '@/lib/sportsrc';
 import { CURATED_LEAGUES, getCurrentLeagues, getScoreboard, getStandings, type EspnLeague } from '@/lib/espn';
 
@@ -52,15 +52,15 @@ export function useLeagues() {
         queryKey: sportsKeys.leagues(),
         queryFn: async () => {
             const current = await getCurrentLeagues('cricket').catch((): EspnLeague[] => []);
-            const seen = new Set<string>();
-            return [...CURATED_LEAGUES, ...current]
-                .filter((l) => {
-                    const id = `${l.sport}/${l.slug}`;
-                    if (seen.has(id)) return false;
-                    seen.add(id);
-                    return true;
-                })
-                .map((l) => ({ ...l, id: `${l.sport}/${l.slug}` }));
+            // Curated entries keep their nicer names but pick up the "on now"
+            // flag, so a live NPL still lands in the hub's live fixtures.
+            const byId = new Map<string, EspnLeague>();
+            for (const l of [...CURATED_LEAGUES, ...current]) {
+                const id = `${l.sport}/${l.slug}`;
+                const prev = byId.get(id);
+                byId.set(id, prev ? { ...prev, current: prev.current || l.current } : l);
+            }
+            return [...byId.entries()].map(([id, l]) => ({ ...l, id }));
         },
         staleTime: 30 * MIN,
     });
@@ -82,5 +82,17 @@ export function useStandings(sport: string | undefined, league: string | undefin
         queryFn: () => getStandings(sport!, league!),
         staleTime: 10 * MIN,
         enabled: !!sport && !!league,
+    });
+}
+
+/** Scoreboards for several leagues at once, sharing useScoreboard's cache. */
+export function useScoreboards(leagues: Array<{ sport: string; slug: string }>) {
+    return useQueries({
+        queries: leagues.map((l) => ({
+            queryKey: sportsKeys.scoreboard(l.sport, l.slug),
+            queryFn: () => getScoreboard(l.sport, l.slug),
+            staleTime: 60_000,
+            refetchInterval: 60_000,
+        })),
     });
 }

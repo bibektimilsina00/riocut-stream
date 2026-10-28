@@ -58,7 +58,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
             {p.attributes && Object.keys(p.attributes).length > 0 ? <Attributes attributes={p.attributes} /> : null}
 
             {(p.strengths.length > 0 || p.weaknesses.length > 0) ? (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {p.strengths.length > 0 ? <Chips title="Strengths" items={p.strengths} tone="emerald" /> : null}
                     {p.weaknesses.length > 0 ? <Chips title="Weaknesses" items={p.weaknesses} tone="red" /> : null}
                 </div>
@@ -109,7 +109,7 @@ function Attributes({ attributes }: { attributes: Record<string, number> }) {
     const entries = Object.entries(attributes).filter(([, v]) => typeof v === 'number');
     return (
         <Card title="Attributes">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {entries.map(([k, v]) => (
                     <div key={k}>
                         <div className="mb-1 flex items-center justify-between text-xs">

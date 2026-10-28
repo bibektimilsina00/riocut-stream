@@ -12,12 +12,12 @@ import { SITE_URL, SITE_NAME, TWITTER_HANDLE } from "@/lib/seo";
 export const dynamic = 'force-dynamic';
 
 const ROOT_DESCRIPTION =
-    "Watch live football, basketball, UFC, MMA, tennis, cricket and more on Riocut Sports. " +
+    "Watch live football, basketball, UFC, MMA, tennis, cricket and more on RioSports. " +
     "Free live streams, league standings, match schedules, scores and a watch-together " +
     "lobby — all in one privacy-friendly hub.";
 
 const ROOT_KEYWORDS = [
-    "Riocut Sports", "live sports streaming", "free live sports", "watch sports online",
+    "RioSports", "live sports streaming", "free live sports", "watch sports online",
     "football live stream", "Premier League stream", "La Liga stream", "Champions League stream",
     "NBA live stream", "basketball live", "UFC live stream", "MMA live stream",
     "tennis live", "cricket live", "rugby live", "hockey live", "motor sports live",

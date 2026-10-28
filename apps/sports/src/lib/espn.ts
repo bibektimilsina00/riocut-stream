@@ -1,4 +1,5 @@
 import type { Match } from './sportsrc';
+import { SPORTS } from './sports';
 
 /**
  * ESPN's public site API: fixtures, live scores and standings for every sport
@@ -7,30 +8,24 @@ import type { Match } from './sportsrc';
  * providers so a league page is never a dead end.
  */
 
-const SITE = 'https://site.api.espn.com/apis/site/v2/sports';
-const STANDINGS = 'https://site.api.espn.com/apis/v2/sports';
+// site.web.api, not site.api: the latter answers curl but fails every browser
+// fetch, which left league pages and hubs without fixtures.
+const SITE = 'https://site.web.api.espn.com/apis/site/v2/sports';
+const STANDINGS = 'https://site.web.api.espn.com/apis/v2/sports';
 const HEADER = 'https://site.web.api.espn.com/apis/v2/scoreboard/header';
 
 export interface EspnSport {
     /** ESPN sport path segment. */
     key: string;
-    /** Our stream category (see providers / SPORT_PRIORITY). */
+    /** Our stream category (see lib/sports.ts). */
     category: string;
     label: string;
 }
 
-/** Display order mirrors SPORT_PRIORITY. */
-export const ESPN_SPORTS: EspnSport[] = [
-    { key: 'soccer', category: 'football', label: 'Football' },
-    { key: 'cricket', category: 'cricket', label: 'Cricket' },
-    { key: 'basketball', category: 'basketball', label: 'Basketball' },
-    { key: 'football', category: 'american-football', label: 'American Football' },
-    { key: 'mma', category: 'fight', label: 'UFC / MMA' },
-    { key: 'racing', category: 'motor-sports', label: 'Motorsport' },
-    { key: 'tennis', category: 'tennis', label: 'Tennis' },
-    { key: 'hockey', category: 'hockey', label: 'Hockey' },
-    { key: 'baseball', category: 'baseball', label: 'Baseball' },
-];
+/** Every registry sport ESPN covers, in registry order. */
+export const ESPN_SPORTS: EspnSport[] = SPORTS
+    .filter((s) => s.espn)
+    .map((s) => ({ key: s.espn!, category: s.category, label: s.label }));
 
 export interface EspnLeague {
     sport: string;

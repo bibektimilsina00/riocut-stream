@@ -71,7 +71,7 @@ export default function PlayersPage() {
                 <EmptyState Icon={Search} title={name ? `No players for "${name}"` : 'No players'} description="Try another name or position filter." />
             ) : (
                 <>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {players.map((p) => <PlayerCard key={p.id} player={p} />)}
                     </div>
 
@@ -104,7 +104,7 @@ function PageBtn({ disabled, onClick, children }: { disabled: boolean; onClick: 
 function Grid({ skeleton }: { skeleton?: boolean }) {
     if (!skeleton) return null;
     return (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 12 }).map((_, i) => <div key={i} className="h-[70px] rounded-xl bg-gray-900 animate-pulse" />)}
         </div>
     );
