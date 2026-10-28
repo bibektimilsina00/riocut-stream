@@ -95,7 +95,7 @@ jobs:
           # app -> "public_app_name|app_url_var|default_url"
           declare -A META=(
             [movies]="Riocut|RIOCUT_URL|https://riocut.com"
-            [sports]="Riocut Sports|RIOCUT_SPORTS_URL|https://sports.riocut.com"
+            [sports]="RioSports|RIOCUT_SPORTS_URL|https://sports.riocut.com"
             [tv]="Riocut TV|RIOCUT_TV_URL|https://tv.riocut.com"
             [blog]="Riocut Blog|RIOCUT_BLOG_URL|https://blog.riocut.com"
             [admin]="Riocut Admin|RIOCUT_ADMIN_URL|https://admin.riocut.com"
@@ -189,7 +189,7 @@ jobs:
 
   build:
     name: 🐳 Build & Push (${{ matrix.app }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm  # server is aarch64 (Oracle Ampere)
     needs: [validate]
     if: needs.validate.outputs.should-deploy == 'true'
     strategy:
@@ -220,7 +220,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile.app
-          platforms: linux/amd64
+          platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
