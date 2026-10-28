@@ -11,8 +11,10 @@ import HlsVideo from './HlsVideo';
  *
  * Reliability signals (invisible to viewers — no strikethrough, no shame chips):
  *  - LOAD_GRACE_MS: iframe never signals a load → auto-advance + report.
- *  - STALL_MS: no postMessage from iframe + no user interaction → show a "stuck?"
- *    nudge. Viewer's click on the nudge's Try next → report + blacklist.
+ *  - "Stuck?" nudge only on real evidence: our own HLS player buffering for
+ *    STALL_MS. Cross-origin iframes can't report playback, so they get no
+ *    nudge (it used to fire on a blind timer mid-match); Try next is always there.
+ *    Viewer's click on the nudge's Try next → report + blacklist.
  *  - OK_DWELL_MS: viewer stayed on a source (tab visible, no switch) → report
  *    'ok'. Rankings put sources other viewers stayed on first, unknown next,
  *    reported-bad last — so early viewers explore and later ones land on a
@@ -25,7 +27,6 @@ import HlsVideo from './HlsVideo';
  */
 
 const LOAD_GRACE_MS = 12_000;
-const STALL_MS = 60_000;
 const OK_DWELL_MS = 3 * 60_000;
 const LANG_ALL = '__all__';
 
@@ -84,8 +85,6 @@ export default function EmbedMatchPlayer({
     const [failed, setFailed] = useState<Set<string>>(new Set());
     const [showStall, setShowStall] = useState(false);
     const loadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const stallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const lastActivity = useRef<number>(Date.now());
     const reportedOk = useRef<Set<string>>(new Set());
 
     // Visible sources under the current language filter, in ranked order.
@@ -140,37 +139,8 @@ export default function EmbedMatchPlayer({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeSrc]);
 
-    // Stall watchdog + postMessage listener.
-    useEffect(() => {
-        if (!active) return;
-        setShowStall(false);
-        lastActivity.current = Date.now();
-
-        function ping() {
-            lastActivity.current = Date.now();
-            setShowStall(false);
-            armStall();
-        }
-        function armStall() {
-            if (stallTimer.current) clearTimeout(stallTimer.current);
-            stallTimer.current = setTimeout(() => setShowStall(true), STALL_MS);
-        }
-        function onMsg() { ping(); }
-        function onInteract() { ping(); }
-
-        window.addEventListener('message', onMsg);
-        window.addEventListener('pointerdown', onInteract);
-        window.addEventListener('keydown', onInteract);
-        armStall();
-
-        return () => {
-            window.removeEventListener('message', onMsg);
-            window.removeEventListener('pointerdown', onInteract);
-            window.removeEventListener('keydown', onInteract);
-            if (stallTimer.current) clearTimeout(stallTimer.current);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeSrc]);
+    // A new source starts un-stalled.
+    useEffect(() => setShowStall(false), [activeSrc]);
 
     function onLoad() {
         if (loadTimer.current) clearTimeout(loadTimer.current);
@@ -195,6 +165,7 @@ export default function EmbedMatchPlayer({
                         title={title ?? 'Live stream'}
                         onReady={onLoad}
                         onFatal={() => autoAdvance('auto-failed')}
+                        onStall={setShowStall}
                     />
                 ) : (
                     <iframe

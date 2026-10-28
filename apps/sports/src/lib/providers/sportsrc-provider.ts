@@ -14,6 +14,23 @@ import { SportsProvider, TokenBucket } from './base';
 
 const BASE_URL = 'https://api.sportsrc.org';
 
+// sportsrc's /img/sport/* links 301 to the closed streamed.pk (bad cert), so
+// every poster/badge rendered broken — and, winning dedupe, hid the working
+// posters other providers have for the same match.
+const DEAD_IMAGE = /^https?:\/\/(www\.)?sportsrc\.org\/img\//;
+const liveImage = (u: string | null | undefined) => (u && !DEAD_IMAGE.test(u) ? u : null);
+
+function withLiveImages<T extends Match>(m: T): T {
+    return {
+        ...m,
+        poster: liveImage(m.poster),
+        teams: {
+            home: { ...m.teams?.home, name: m.teams?.home?.name ?? '', badge: liveImage(m.teams?.home?.badge) },
+            away: { ...m.teams?.away, name: m.teams?.away?.name ?? '', badge: liveImage(m.teams?.away?.badge) },
+        },
+    };
+}
+
 interface ApiEnvelope<T> {
     success: boolean;
     data?: T;
@@ -56,7 +73,7 @@ export class SportsrcProvider implements SportsProvider {
     async getMatchDetail(category: string, id: string): Promise<MatchDetail | null> {
         const detail = await this.tryDetail(category, id) ?? (category !== 'live' ? await this.tryDetail('live', id) : null);
         if (!detail) return null;
-        return { ...detail, sources: (detail.sources ?? []).map((s) => ({ ...s, provider: this.name })) };
+        return { ...withLiveImages(detail), sources: (detail.sources ?? []).map((s) => ({ ...s, provider: this.name })) };
     }
 
     private async tryDetail(category: string, id: string): Promise<MatchDetail | null> {
@@ -69,6 +86,6 @@ export class SportsrcProvider implements SportsProvider {
     }
 
     private tag(matches: Match[]): Match[] {
-        return matches.map((m) => ({ ...m, provider: this.name }));
+        return matches.map((m) => ({ ...withLiveImages(m), provider: this.name }));
     }
 }

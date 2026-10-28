@@ -4,17 +4,16 @@ import Link from 'next/link';
 import { useMatchesByCategory } from '@/lib/hooks/useSports';
 import { isMatchLive, sortMatches, type Match } from '@/lib/sportsrc';
 import { sportMeta, sportRank } from '@/lib/sports';
-import MatchCard from '@/components/MatchCard';
-import EmptyState from '@/components/EmptyState';
-import { Activity, Flame, FlameKindling } from 'lucide-react';
+import MatchRow, { RowList, RowSkeleton } from '@/components/MatchRow';
+import { Flame } from 'lucide-react';
 
 // 'live' is every provider's all-sports bucket, so one query feeds every row
 // and big matches from any sport compete on the same popularity ranking.
 const ALL = 'live';
 const TOP_LIVE = 8;
-// Keeps one sport's busy evening from filling the whole "Live now" row.
+// Keeps one sport's busy evening from filling the whole "Live now" list.
 const PER_SPORT_CAP = 3;
-const RAIL_SIZE = 4;
+const PANEL_SIZE = 3;
 
 const key = (m: Match) => `${m.category}-${m.id}`;
 
@@ -30,29 +29,22 @@ function pickTopLive(live: Match[]): Match[] {
     return sortMatches([...picked, ...live.filter((m) => !taken.has(key(m)))].slice(0, TOP_LIVE));
 }
 
-function Grid({ items }: { items: Match[] }) {
-    return (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {items.map((m) => <MatchCard key={key(m)} match={m} category={m.category} />)}
-        </div>
-    );
-}
-
-function SportRail({ category, matches, liveCount }: { category: string; matches: Match[]; liveCount: number }) {
+function SportPanel({ category, matches, liveCount }: { category: string; matches: Match[]; liveCount: number }) {
     const meta = sportMeta(category);
+    const href = `/sports/${encodeURIComponent(category)}`;
     return (
-        <section className="space-y-3">
+        <section className="space-y-2">
             <div className="flex items-center gap-2">
-                <span className="text-xl leading-none" aria-hidden>{meta.emoji}</span>
-                <h2 className="text-lg font-semibold text-white">{meta.label}</h2>
+                <span className="text-lg leading-none" aria-hidden>{meta.emoji}</span>
+                <Link href={href} className="text-base font-semibold text-white hover:text-teal-300">{meta.label}</Link>
                 {liveCount > 0 ? (
                     <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[11px] font-medium text-red-300">{liveCount} live</span>
                 ) : null}
-                <Link href={`/sports/${encodeURIComponent(category)}`} className="ml-auto shrink-0 text-sm text-gray-400 hover:text-teal-400">
-                    View all →
-                </Link>
+                <Link href={href} className="ml-auto shrink-0 text-xs text-gray-400 hover:text-teal-400">View all →</Link>
             </div>
-            <Grid items={matches} />
+            <RowList>
+                {matches.map((m) => <MatchRow key={key(m)} match={m} />)}
+            </RowList>
         </section>
     );
 }
@@ -64,50 +56,54 @@ export default function HomePage() {
     const topLive = pickTopLive(live);
     const shown = new Set(topLive.map(key));
 
-    // One rail per sport: its live matches not already featured, then what's next.
+    // One panel per sport: its live matches not already featured, then what's next.
     const bySport = new Map<string, Match[]>();
     for (const m of sortMatches(matches)) {
         if (shown.has(key(m)) || !(isMatchLive(m) || (m.date ?? 0) > now)) continue;
         (bySport.get(m.category) ?? bySport.set(m.category, []).get(m.category)!).push(m);
     }
-    const rails = [...bySport.entries()].sort((a, b) => sportRank(a[0]) - sportRank(b[0]));
+    const panels = [...bySport.entries()].sort((a, b) => sportRank(a[0]) - sportRank(b[0]));
     const liveBySport = (c: string) => live.filter((m) => m.category === c).length;
 
     return (
-        <div className="container mx-auto px-4 py-8 space-y-10">
-            <section className="relative overflow-hidden rounded-xl border border-gray-800 bg-gradient-to-br from-teal-500/10 via-gray-900 to-gray-950 p-6 md:p-8">
-                <div className="max-w-2xl space-y-2">
-                    <p className="text-xs uppercase tracking-widest text-teal-400">RioSports</p>
-                    <h1 className="text-2xl font-bold tracking-tight md:text-4xl text-white">
-                        Live sports streaming, schedules & stats.
-                    </h1>
-                    <p className="text-sm md:text-base text-gray-400">
-                        Football, cricket, basketball, F1, UFC and more. Pick a sport above for its fixtures, leagues and standings.
-                    </p>
-                </div>
-                <Activity className="absolute -bottom-6 -right-6 h-48 w-48 text-teal-500/10" />
-            </section>
+        <div className="container mx-auto px-4 py-6 space-y-8">
+            <h1 className="sr-only">RioSports — live sports streams, scores and schedules</h1>
 
-            <section className="space-y-3">
+            <section className="space-y-2">
                 <div className="flex items-center gap-2">
                     <Flame className="h-5 w-5 text-red-500" />
-                    <h2 className="text-xl font-semibold text-white">Live now</h2>
-                    {live.length > 0 ? <span className="text-xs text-gray-500">({live.length})</span> : null}
+                    <h2 className="text-lg font-semibold text-white">Live now</h2>
+                    {live.length > 0 ? <span className="text-xs text-gray-500">{live.length} matches</span> : null}
                 </div>
                 {isLoading ? (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-52 rounded-xl bg-gray-900 animate-pulse" />)}
-                    </div>
+                    <RowSkeleton rows={4} />
                 ) : topLive.length > 0 ? (
-                    <Grid items={topLive} />
+                    // Two lists side by side on desktop; one on phones.
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                        {[topLive.slice(0, Math.ceil(topLive.length / 2)), topLive.slice(Math.ceil(topLive.length / 2))]
+                            .filter((half) => half.length > 0)
+                            .map((half, i) => (
+                                <RowList key={i}>{half.map((m) => <MatchRow key={key(m)} match={m} />)}</RowList>
+                            ))}
+                    </div>
                 ) : (
-                    <EmptyState Icon={FlameKindling} title="Nothing live right now" description="Here's what's coming up next in each sport." />
+                    <p className="rounded-xl border border-gray-800 bg-gray-900 px-4 py-6 text-center text-sm text-gray-400">
+                        Nothing live right now — here&apos;s what&apos;s coming up next.
+                    </p>
                 )}
             </section>
 
-            {rails.map(([category, items]) => (
-                <SportRail key={category} category={category} matches={items.slice(0, RAIL_SIZE)} liveCount={liveBySport(category)} />
-            ))}
+            {isLoading ? (
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {Array.from({ length: 4 }).map((_, i) => <RowSkeleton key={i} />)}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {panels.map(([category, items]) => (
+                        <SportPanel key={category} category={category} matches={items.slice(0, PANEL_SIZE)} liveCount={liveBySport(category)} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

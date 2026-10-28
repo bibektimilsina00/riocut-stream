@@ -34,13 +34,13 @@ function LeaguesIndex() {
 
     return (
         <div className="container mx-auto px-4 py-8 space-y-8">
-            <section className="relative overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/60 p-8">
+            <section className="relative overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/60 p-5 md:p-8">
                 <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-teal-500/10 blur-3xl" aria-hidden />
                 <div className="relative max-w-2xl space-y-3">
                     <div className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-teal-300/90">
                         <Trophy className="h-3 w-3" /> Leagues & tournaments
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Every competition, one place</h1>
+                    <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white">Every competition, one place</h1>
                     <p className="text-sm md:text-base text-gray-400 max-w-xl">
                         Fixtures, live scores, standings and points tables for football, cricket, NBA, NFL, F1, UFC and more —
                         with a watch button on every match we stream.

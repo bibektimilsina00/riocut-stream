@@ -17,12 +17,13 @@ type Row = {
     lastResponseTime: number | null;
 };
 
-const KINDS = ['sportsrc', 'streamed', 'esportex', 'yono'] as const;
+const KINDS = ['sportsrc', 'streamed', 'esportex', 'yono', 'channels'] as const;
 const KIND_LABEL: Record<string, string> = {
     sportsrc: 'sportsrc.org',
     streamed: 'streamed (mirrors)',
     esportex: 'esportex.site',
     yono: 'Yono TV (cricket)',
+    channels: 'Cricket channels (PTV, Ten, A Sports, Willow, NetTV NPL)',
 };
 
 function statusIcon(s: string | null) {

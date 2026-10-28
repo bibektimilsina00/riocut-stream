@@ -54,7 +54,7 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-semibold mb-4 text-lg">About</h3>
                         <p className="text-gray-400 text-sm leading-relaxed">
-                            One account across Riocut and RioSports. Stream data via sportsrc.org.
+                            One account across Riocut and RioSports.
                         </p>
                     </div>
                 </div>

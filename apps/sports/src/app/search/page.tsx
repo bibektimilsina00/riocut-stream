@@ -7,7 +7,7 @@ import { useSportsCategories, useLeagues, sportsKeys } from '@/lib/hooks/useSpor
 import { sportsrc, type Match } from '@/lib/sportsrc';
 import SportsTile from '@/components/SportsTile';
 import Link from 'next/link';
-import MatchCard from '@/components/MatchCard';
+import MatchRow, { RowList } from '@/components/MatchRow';
 import EmptyState from '@/components/EmptyState';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
 
@@ -83,11 +83,11 @@ function SearchResults({ q }: { q: string }) {
             {matchMatches.length > 0 ? (
                 <section className="space-y-4">
                     <SectionHeader title="Matches" count={matchMatches.length} loading={matchesLoading} />
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <RowList>
                         {matchMatches.map(({ match, category }) => (
-                            <MatchCard key={`${category}:${match.id}`} match={match} category={category} />
+                            <MatchRow key={`${category}:${match.id}`} match={{ ...match, category: match.category || category }} />
                         ))}
-                    </div>
+                    </RowList>
                 </section>
             ) : null}
 

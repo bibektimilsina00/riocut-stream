@@ -90,6 +90,8 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                 </div>
 
                 <aside className="space-y-4">
+                    <CommentSection matchKey={`${cat}:${detail.id}`} />
+
                     <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 space-y-3">
                         <h3 className="text-sm font-semibold text-white">Watch together</h3>
                         <p className="text-xs text-gray-400">
@@ -102,12 +104,10 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                         </Link>
                     </div>
 
-                    <CommentSection matchKey={`${cat}:${detail.id}`} />
-
                     <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 space-y-2">
                         <h3 className="text-sm font-semibold text-white">Match info</h3>
                         <dl className="text-xs space-y-1">
-                            <div className="flex justify-between"><dt className="text-gray-500">Sport</dt><dd className="text-gray-300 capitalize">{cat.replace(/-/g, ' ')}</dd></div>
+                            <div className="flex justify-between"><dt className="text-gray-500">Sport</dt><dd className="text-gray-300">{sportMeta(cat).label}</dd></div>
                             <div className="flex justify-between"><dt className="text-gray-500">Streams</dt><dd className="text-gray-300">{detail.sources?.length ?? 0}</dd></div>
                             <div className="flex justify-between"><dt className="text-gray-500">Status</dt><dd className="text-gray-300">{live ? 'Live' : (kickoff && kickoff.getTime() < Date.now() ? 'Finished' : 'Scheduled')}</dd></div>
                         </dl>

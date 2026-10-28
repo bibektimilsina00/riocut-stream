@@ -1,6 +1,17 @@
 import type { Metadata } from 'next';
 import { pageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
-import { sportsrc, getMatchKickoff, pickBestSource } from '@/lib/sportsrc';
+import { cache } from 'react';
+import { sportsrc, getMatchKickoff, pickBestSource, type MatchDetail } from '@/lib/sportsrc';
+
+// Metadata + JSON-LD are SEO extras: one shared lookup per request, and never
+// worth holding the page for. Past the budget we render generic metadata and
+// the player resolves streams client-side as usual.
+const SEO_BUDGET_MS = 2_500;
+const lookup = cache((category: string, id: string): Promise<MatchDetail | null> =>
+    Promise.race([
+        sportsrc.getMatchDetail(category, id).catch(() => null),
+        new Promise<null>((r) => setTimeout(() => r(null), SEO_BUDGET_MS)),
+    ]));
 
 export async function generateMetadata({
     params,
@@ -11,7 +22,7 @@ export async function generateMetadata({
     const pretty = category.replace(/-/g, ' ');
 
     try {
-        const detail = await sportsrc.getMatchDetail(category, id);
+        const detail = await lookup(category, id);
         if (detail) {
             const home = detail.teams?.home?.name ?? 'Home';
             const away = detail.teams?.away?.name ?? 'Away';
@@ -60,7 +71,7 @@ export default async function MatchLayout({
     // SportsEvent JSON-LD for Google rich-result eligibility.
     let jsonLd: Record<string, unknown> | null = null;
     try {
-        const detail = await sportsrc.getMatchDetail(category, id);
+        const detail = await lookup(category, id);
         if (detail) {
             const home = detail.teams?.home?.name ?? 'Home';
             const away = detail.teams?.away?.name ?? 'Away';

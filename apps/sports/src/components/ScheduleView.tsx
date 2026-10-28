@@ -3,9 +3,9 @@
 import { useMemo, useState } from 'react';
 import { CalendarOff } from 'lucide-react';
 import { useMatchesByCategory } from '@/lib/hooks/useSports';
-import { getMatchKickoff, sortMatches } from '@/lib/sportsrc';
+import { getMatchKickoff } from '@/lib/sportsrc';
 import { sportMeta } from '@/lib/sports';
-import MatchCard from '@/components/MatchCard';
+import MatchRow, { RowList, RowSkeleton } from '@/components/MatchRow';
 import EmptyState from '@/components/EmptyState';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -16,19 +16,19 @@ function startOfDay(d: Date) {
     return x;
 }
 
+// All-sports view: a busy football Saturday shouldn't bury every other sport.
+const COLLAPSED = 8;
+
 function DayMatches({ category, day, single }: { category: string; day: Date; single: boolean }) {
+    const [expanded, setExpanded] = useState(false);
     const { data: matches = [], isLoading } = useMatchesByCategory(category);
     const dayStart = startOfDay(day).getTime();
-    const filtered = sortMatches(matches).filter((m) => {
+    const filtered = [...matches].sort((a, b) => a.date - b.date).filter((m) => {
         const t = getMatchKickoff(m)?.getTime();
         return t !== undefined && t >= dayStart && t < dayStart + DAY;
     });
     if (isLoading && single) {
-        return (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-52 rounded-xl bg-gray-900 animate-pulse" />)}
-            </div>
-        );
+        return <RowSkeleton rows={5} />;
     }
     if (filtered.length === 0) {
         return single
@@ -37,15 +37,18 @@ function DayMatches({ category, day, single }: { category: string; day: Date; si
     }
     const meta = sportMeta(category);
     return (
-        <div className="space-y-3">
+        <div className="space-y-2">
             {single ? null : (
-                <h3 className="text-sm font-semibold text-gray-400">{meta.emoji} {meta.label}</h3>
+                <h3 className="text-sm font-semibold text-gray-300">{meta.emoji} {meta.label} <span className="text-xs font-normal text-gray-500">{filtered.length}</span></h3>
             )}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filtered.map((m) => (
-                    <MatchCard key={`${category}-${m.id}`} match={m} category={category} />
-                ))}
-            </div>
+            <RowList>
+                {(single || expanded ? filtered : filtered.slice(0, COLLAPSED)).map((m) => <MatchRow key={`${category}-${m.id}`} match={m} />)}
+                {!single && !expanded && filtered.length > COLLAPSED ? (
+                    <button onClick={() => setExpanded(true)} className="w-full px-3 py-2 text-center text-xs text-teal-300 hover:bg-gray-800/60">
+                        Show {filtered.length - COLLAPSED} more {meta.label.toLowerCase()}
+                    </button>
+                ) : null}
+            </RowList>
         </div>
     );
 }
@@ -61,20 +64,20 @@ export default function ScheduleView({ categories }: { categories: string[] }) {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-7 gap-1.5">
                 {days.map((d, i) => (
                     <button
                         key={i}
                         onClick={() => setDayOffset(i)}
                         className={
-                            'rounded-md border px-3 py-2 text-xs ' +
+                            'rounded-lg border px-1 py-2 text-[11px] sm:text-xs ' +
                             (i === dayOffset ? 'bg-teal-500/20 text-teal-200 border-teal-500/50' : 'border-gray-800 text-gray-300 hover:bg-gray-800')
                         }
                     >
                         <div className="font-semibold">
                             {i === 0 ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'short' })}
                         </div>
-                        <div className="opacity-70">{d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                        <div className="opacity-70">{d.getDate()}</div>
                     </button>
                 ))}
             </div>

@@ -83,7 +83,12 @@ async function get<T>(url: string): Promise<T> {
 
 // ---------- Catalog ----------
 
-type RawHeader = { sports?: Array<{ leagues?: Array<{ id?: string; slug?: string; name?: string; events?: unknown[] }> }> };
+type RawHeaderEvent = {
+    id?: string; name?: string; date?: string; status?: string; summary?: string;
+    fullStatus?: { type?: { shortDetail?: string } };
+    competitors?: Array<{ displayName?: string; name?: string; abbreviation?: string; logo?: string; score?: string; winner?: boolean }>;
+};
+type RawHeader = { sports?: Array<{ leagues?: Array<{ id?: string; slug?: string; name?: string; events?: RawHeaderEvent[] }> }> };
 
 /**
  * Cricket runs as dozens of short tours and series (e.g. "Australia tour of
@@ -284,4 +289,59 @@ export function findStream(event: EspnEvent, matches: Match[]): Match | null {
         }
     }
     return null;
+}
+
+// ---------- Live scores ----------
+
+/**
+ * Every event ESPN's header lists for a sport right now, across all leagues,
+ * in one request. Feeds the live score on match cards.
+ */
+export async function getHeaderEvents(sport: string): Promise<EspnEvent[]> {
+    const d = await get<RawHeader>(`${HEADER}?sport=${encodeURIComponent(sport)}`);
+    const out: EspnEvent[] = [];
+    for (const s of d.sports ?? []) {
+        for (const l of s.leagues ?? []) {
+            for (const e of l.events ?? []) {
+                if (!e.id || !e.date) continue;
+                const comps = e.competitors ?? [];
+                out.push({
+                    id: e.id,
+                    name: e.name ?? '',
+                    date: Date.parse(e.date),
+                    state: e.status === 'in' || e.status === 'post' ? e.status : 'pre',
+                    // Cricket's shortDetail is just "Live"; its summary has "Stumps", targets…
+                    status: (e.fullStatus?.type?.shortDetail !== 'Live' && e.fullStatus?.type?.shortDetail) || e.summary || '',
+                    competitors: comps.length === 2
+                        ? comps.map((c) => ({
+                            name: c.displayName ?? c.name ?? '',
+                            shortName: c.name,
+                            abbreviation: c.abbreviation,
+                            logo: c.logo,
+                            score: c.score || undefined,
+                            winner: c.winner,
+                        }))
+                        : [],
+                });
+            }
+        }
+    }
+    return out;
+}
+
+/** The ESPN event for one of our stream matches, if ESPN tracks it. */
+export function findEvent(match: Match, events: EspnEvent[]): EspnEvent | null {
+    // An in-progress event is live now whatever its start date (Test day 3,
+    // a long race), so only check the kickoff window for the others.
+    return events.find((e) => findStream(e, [e.state === 'in' ? { ...match, date: e.date } : match])) ?? null;
+}
+
+/** ESPN's competitor for one of our team names (sides may be listed in either order). */
+export function competitorFor(event: EspnEvent, teamName: string): EspnCompetitor | undefined {
+    const ours = tokens(teamName);
+    const flat = compact(teamName);
+    return event.competitors.find((c) =>
+        [c.name, c.shortName ?? ''].some((n) => tokens(n).some((t) => ours.includes(t))) ||
+        ours.some((t) => t.length >= 5 && compact(c.name).includes(t)) ||
+        (flat.length >= 5 && compact(c.name).includes(flat)));
 }

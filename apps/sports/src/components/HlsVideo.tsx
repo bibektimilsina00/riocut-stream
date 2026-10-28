@@ -15,16 +15,30 @@ function start(video: HTMLVideoElement) {
     });
 }
 
-export default function HlsVideo({ src, title, onReady, onFatal }: {
+/** Buffering this long (not a blip) is a stuck stream. */
+const STALL_MS = 10_000;
+
+export default function HlsVideo({ src, title, onReady, onFatal, onStall }: {
     src: string;
     title?: string;
     onReady: () => void;
     onFatal: () => void;
+    /** true once playback has been buffering for STALL_MS, false when it resumes. */
+    onStall: (stalled: boolean) => void;
 }) {
     const ref = useRef<HTMLVideoElement>(null);
     // hls.js and the <video> element can both report the same failure; advance once.
     const failed = useRef(false);
     const fail = () => { if (!failed.current) { failed.current = true; onFatal(); } };
+    const stallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const waiting = () => {
+        if (!stallTimer.current) stallTimer.current = setTimeout(() => onStall(true), STALL_MS);
+    };
+    const playing = () => {
+        if (stallTimer.current) { clearTimeout(stallTimer.current); stallTimer.current = null; }
+        onStall(false);
+    };
+    useEffect(() => () => { if (stallTimer.current) clearTimeout(stallTimer.current); }, []);
 
     useEffect(() => {
         const video = ref.current;
@@ -60,6 +74,8 @@ export default function HlsVideo({ src, title, onReady, onFatal }: {
             playsInline
             onLoadedData={onReady}
             onError={fail}
+            onWaiting={waiting}
+            onPlaying={playing}
         />
     );
 }

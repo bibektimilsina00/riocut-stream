@@ -31,7 +31,7 @@ export default function LeaguePage({ params }: { params: Promise<{ sport: string
 
             <header className="flex items-center gap-4">
                 {board?.league.logo ? (
-                    <Image src={board.league.logo} alt="" width={56} height={56} className="h-14 w-14 object-contain" unoptimized />
+                    <Image src={board.league.logo} alt="" width={56} height={56} className="h-14 w-14 object-contain" unoptimized onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                 ) : (
                     <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-900 text-gray-500"><Trophy className="h-6 w-6" /></div>
                 )}

@@ -2,7 +2,9 @@
 
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { sportsrc } from '@/lib/sportsrc';
-import { CURATED_LEAGUES, getCurrentLeagues, getScoreboard, getStandings, type EspnLeague } from '@/lib/espn';
+import { CURATED_LEAGUES, findEvent, getCurrentLeagues, getHeaderEvents, getScoreboard, getStandings, type EspnLeague } from '@/lib/espn';
+import { sportMeta } from '@/lib/sports';
+import type { Match } from '@/lib/sportsrc';
 
 export const sportsKeys = {
     all: ['sportsrc'] as const,
@@ -95,4 +97,20 @@ export function useScoreboards(leagues: Array<{ sport: string; slug: string }>) 
             refetchInterval: 60_000,
         })),
     });
+}
+
+/**
+ * ESPN's live score for a stream match. One header request per sport, shared
+ * by every card through the query cache; only runs while the match is live.
+ */
+export function useLiveScore(match: Match, live: boolean) {
+    const espn = sportMeta(match.category).espn;
+    const { data } = useQuery({
+        queryKey: ['espn', 'header-events', espn],
+        queryFn: () => getHeaderEvents(espn!),
+        enabled: live && !!espn,
+        staleTime: 30_000,
+        refetchInterval: 60_000,
+    });
+    return live && data ? findEvent(match, data) : null;
 }
