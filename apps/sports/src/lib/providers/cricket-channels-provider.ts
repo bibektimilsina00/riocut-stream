@@ -7,7 +7,7 @@ import { getHeaderEvents } from '../espn';
  * Cricket sources that aren't a per-match feed, so cricket never hangs on one
  * upstream (Yono):
  *  - 24/7 channels: MS Networks HLS (PTV Sports, Ten Sports, A Sports — CORS
- *    open, played by our hls.js player) and ppv.st's cricket channels (iframe).
+ *    open, played by our hls.js player) and ppv.st's and streamfree.top's cricket channels (iframe).
  *  - NetTV's own NPL feed, listed only while ESPN says an NPL match is on
  *    (the playlist keeps answering between matches).
  *
@@ -26,11 +26,15 @@ const HLS_CHANNELS = [
     { id: 'ch-a-sports', title: 'A Sports', url: 'https://live.msnetworks.net/a-sports/master.m3u8' },
 ];
 const PPV_API = 'https://api.ppv.st/api/streams';
+// streamfree lists streams as JSON, but the embed URLs only live in each
+// player page's `let sources = [...]` line.
+const STREAMFREE = 'https://streamfree.top';
 const NPL_ESPN_LEAGUE = 'Nepal Premier League';
 const nplUrl = (n: number) => `https://ottnlive-fstream.nettvstreamz.com/live_hls/npl_match_${n}/playlist.m3u8`;
 
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
+type StreamfreeStream = { name?: string; stream_key?: string; thumbnail_url?: string };
 
 const channel = (id: string, title: string, provider: string, poster: string | null = null): Match => ({
     id,
@@ -65,9 +69,10 @@ export class CricketChannelsProvider implements SportsProvider {
             sources: [this.source(c.id, c.url, c.title, 1)],
         }));
 
-        const [ppv, npl] = await Promise.all([
+        const [ppv, npl, streamfree] = await Promise.all([
             axios.get<PpvPayload>(PPV_API, { timeout: 8_000 }).then((r) => r.data).catch((): PpvPayload => ({})),
             this.liveNpl(),
+            this.streamfree(),
         ]);
         for (const cat of ppv.streams ?? []) {
             if (!/cricket/i.test(cat.category ?? '')) continue;
@@ -77,9 +82,26 @@ export class CricketChannelsProvider implements SportsProvider {
                 items.push({ match: channel(id, s.name, this.name, s.poster ?? null), sources: [this.source(id, s.iframe, s.name, 1)] });
             }
         }
-        items.push(...npl);
+        items.push(...streamfree, ...npl);
         this.cache = { at: Date.now(), items };
         return items;
+    }
+
+    /** streamfree.top's cricket channels (Willow, Sky Sports Cricket), one source per quality mirror. */
+    private async streamfree(): Promise<Array<{ match: Match; sources: MatchSource[] }>> {
+        const list = await axios.get<{ streams?: Record<string, StreamfreeStream[]> }>(`${STREAMFREE}/streams`, { timeout: 8_000 })
+            .then((r) => r.data.streams?.cricket ?? []).catch((): StreamfreeStream[] => []);
+        const items = await Promise.all(list.map(async (s) => {
+            if (!s.name || !s.stream_key) return null;
+            const page = await axios.get<string>(`${STREAMFREE}/player/cricket/${encodeURIComponent(s.stream_key)}`, { timeout: 8_000, responseType: 'text' })
+                .then((r) => r.data).catch(() => '');
+            const urls = (page.match(/let sources = (\[[^\]]*\])/)?.[1].match(/https:\/\/[^"]+/g) ?? []);
+            if (!urls.length) return null;
+            const id = `ch-sf-${s.stream_key}`;
+            const poster = s.thumbnail_url ? `${STREAMFREE}${s.thumbnail_url}` : null;
+            return { match: channel(id, s.name, this.name, poster), sources: urls.map((u, i) => this.source(id, u, `${s.name} ${i + 1}`, i + 1)) };
+        }));
+        return items.filter((i) => i !== null);
     }
 
     /** One match per NPL game ESPN has in progress, carrying NetTV's live feeds. */
