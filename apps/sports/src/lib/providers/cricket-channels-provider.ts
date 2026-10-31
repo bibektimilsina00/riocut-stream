@@ -116,10 +116,11 @@ export class CricketChannelsProvider implements SportsProvider {
         const events = await getHeaderEvents('cricket').catch(() => []);
         const live = events.filter((e) => e.state === 'in' && e.competitors.length === 2 && /\(NPL\)/.test(e.competitors[0].name));
         if (!live.length) return [];
-        // NetTV numbers feeds per match; only the live one exists. It 403s outside
-        // Nepal (our server) but plays for Nepali viewers, so only 404 = absent.
+        // NetTV numbers feeds per match; only list ones that actually answer.
+        // A 403 means NetTV is refusing plain requests (hotlink protection, even
+        // from Nepal), and the player can't get past that either.
         const probes = await Promise.all([1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
-            axios.head(nplUrl(n), { timeout: 5_000, validateStatus: (s) => s !== 404 && s < 500 }).then(() => n).catch(() => null)));
+            axios.head(nplUrl(n), { timeout: 5_000 }).then(() => n).catch(() => null)));
         const feeds = probes.filter((n): n is number => n !== null);
         if (!feeds.length) return [];
         return live.map((e) => {
