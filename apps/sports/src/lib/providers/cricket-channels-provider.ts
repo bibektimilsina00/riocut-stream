@@ -30,7 +30,9 @@ const PPV_API = 'https://api.ppv.st/api/streams';
 // player page's `let sources = [...]` line.
 const STREAMFREE = 'https://streamfree.top';
 const NPL_ESPN_LEAGUE = 'Nepal Premier League';
-const nplUrl = (n: number) => `https://ottnlive-fstream.nettvstreamz.com/live_hls/npl_match_${n}/playlist.m3u8`;
+// NetTV's load balancer (the path Yosin TV uses); the old ottnlive-fstream
+// live_hls/npl_match_N paths now 404.
+const nplUrl = (n: number) => `https://lb-ottnp.nettvstreamz.com/npl/live_match${n}/playlist.m3u8`;
 
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
@@ -109,9 +111,10 @@ export class CricketChannelsProvider implements SportsProvider {
         const events = await getHeaderEvents('cricket').catch(() => []);
         const live = events.filter((e) => e.state === 'in' && e.competitors.length === 2 && /\(NPL\)/.test(e.competitors[0].name));
         if (!live.length) return [];
-        // NetTV numbers feeds per match day; probe a few and keep the ones up.
-        const probes = await Promise.all([1, 2, 3, 4, 5, 6].map((n) =>
-            axios.head(nplUrl(n), { timeout: 5_000 }).then(() => n).catch(() => null)));
+        // NetTV numbers feeds per match; only the live one exists. It 403s outside
+        // Nepal (our server) but plays for Nepali viewers, so only 404 = absent.
+        const probes = await Promise.all([1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
+            axios.head(nplUrl(n), { timeout: 5_000, validateStatus: (s) => s !== 404 && s < 500 }).then(() => n).catch(() => null)));
         const feeds = probes.filter((n): n is number => n !== null);
         if (!feeds.length) return [];
         return live.map((e) => {
