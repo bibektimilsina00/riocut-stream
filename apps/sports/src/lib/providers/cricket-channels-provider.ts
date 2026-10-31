@@ -30,9 +30,14 @@ const PPV_API = 'https://api.ppv.st/api/streams';
 // player page's `let sources = [...]` line.
 const STREAMFREE = 'https://streamfree.top';
 const NPL_ESPN_LEAGUE = 'Nepal Premier League';
-// NetTV's load balancer (the path Yosin TV uses); the old ottnlive-fstream
-// live_hls/npl_match_N paths now 404.
-const nplUrl = (n: number) => `https://lb-ottnp.nettvstreamz.com/npl/live_match${n}/playlist.m3u8`;
+// NetTV's own CDN, as its web player uses it: the Nepal load balancer and the
+// international edge serve the same npl/live_matchN feed. NetTV moves these
+// paths every few days (live_hls/npl_match_N, ottnpweb/npl_liveN before).
+const NPL_EDGES = [
+    { host: 'lb-ottnp.nettvstreamz.com', label: 'NetTV' },
+    { host: 'ott-int-nlive.nettvstreamz.com', label: 'NetTV Intl' },
+];
+const nplUrl = (n: number, host = NPL_EDGES[0].host) => `https://${host}/npl/live_match${n}/playlist.m3u8`;
 
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
@@ -131,7 +136,8 @@ export class CricketChannelsProvider implements SportsProvider {
                     provider: this.name,
                     league: NPL_ESPN_LEAGUE,
                 },
-                sources: feeds.map((n, i) => this.source(id, nplUrl(n), `NetTV ${n}`, i + 1)),
+                sources: feeds.flatMap((n) => NPL_EDGES.map((e) => ({ url: nplUrl(n, e.host), label: `${e.label} ${n}` })))
+                    .map((s, i) => this.source(id, s.url, s.label, i + 1)),
             };
         });
     }

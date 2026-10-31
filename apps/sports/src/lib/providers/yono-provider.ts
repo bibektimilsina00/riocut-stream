@@ -44,6 +44,15 @@ function idOf(item: RawScheduleItem): string | null {
     }
 }
 
+/**
+ * Our match id. Yono reuses one feed id for a whole league (every NPL game is
+ * `id=npl`), so add the kickoff to keep each fixture's URL distinct.
+ */
+function matchIdOf(item: RawScheduleItem): string | null {
+    const id = idOf(item);
+    return id ? `${id}-${Date.parse(item.start_time ?? '') || 0}` : null;
+}
+
 /** Yono prefixes league names with a trophy emoji. */
 function leagueOf(item: RawScheduleItem): string | undefined {
     return item.league?.replace(/^[^\p{L}\p{N}]+/u, '').trim() || undefined;
@@ -135,7 +144,7 @@ export class YonoProvider implements SportsProvider {
         if (!['cricket', 'live', 'all'].includes(category.toLowerCase())) return [];
         const out: Match[] = [];
         for (const item of await this.schedule()) {
-            const id = idOf(item);
+            const id = matchIdOf(item);
             if (id && isMatch(item)) out.push(this.toMatch(item, id));
         }
         return out;
@@ -143,10 +152,10 @@ export class YonoProvider implements SportsProvider {
 
     async getMatchDetail(category: string, id: string): Promise<MatchDetail | null> {
         if (category.toLowerCase() !== 'cricket' || !/^[a-z0-9_-]+$/i.test(id)) return null;
-        const item = (await this.schedule()).find((i) => idOf(i) === id && isMatch(i));
+        const item = (await this.schedule()).find((i) => matchIdOf(i) === id && isMatch(i));
         if (!item) return null;
 
-        const data = await this.get<RawMatchData>(`/${id}.json`).catch((): RawMatchData => ({}));
+        const data = await this.get<RawMatchData>(`/${idOf(item)}.json`).catch((): RawMatchData => ({}));
         const sources: MatchSource[] = [];
         const seen = new Set<string>();
         const tables = new Map<string, Map<string, string>>();
