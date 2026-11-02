@@ -54,7 +54,17 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
             const player = new shaka.Player();
             destroy = () => { void player.destroy(); };
             await player.attach(video);
-            player.configure({ drm: { clearKeys: keys } });
+            player.configure({
+                drm: { clearKeys: keys },
+                manifest: {
+                    // FanCode's MPD says "2s behind live" + "30s min buffer": impossible
+                    // together, so Shaka stalls waiting for buffer that doesn't exist yet.
+                    // Sit ~10s (≈5 segments) back and ignore the 30s rule instead.
+                    defaultPresentationDelay: 10,
+                    dash: { ignoreSuggestedPresentationDelay: true, ignoreMinBufferTime: true, autoCorrectDrift: true },
+                },
+                streaming: { rebufferingGoal: 2, bufferingGoal: 10 },
+            });
             player.addEventListener('error', (e: Event) => {
                 if ((e as unknown as { detail?: { severity?: number } }).detail?.severity === 2) onFatal();
             });
