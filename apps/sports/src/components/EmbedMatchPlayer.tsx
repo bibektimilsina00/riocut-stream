@@ -5,7 +5,7 @@ import { AlertTriangle, SkipForward } from 'lucide-react';
 import { resolveEmbedUrl, type MatchSource } from '@/lib/sportsrc';
 import { useBadSources } from '@/lib/hooks/useBadSources';
 import HlsVideo from './HlsVideo';
-import DashVideo, { dashOf } from './DashVideo';
+import DashVideo, { canPlayClearKey, dashOf } from './DashVideo';
 
 /**
  * Multi-source player with automatic + user-driven failover.
@@ -52,14 +52,25 @@ export default function EmbedMatchPlayer({
     const effectiveMatchKey = matchKey ?? '';
     const { isBad, goodRank, markBad, reportToServer } = useBadSources(effectiveMatchKey);
 
+    // Encrypted DASH sources can't play on some devices (iPhone/iPad). Drop them
+    // there instead of letting them fail: a failure is reported to the crowd
+    // ranker and would push a source that works on desktop down for everyone.
+    // null = still checking; DASH waits for the answer rather than racing it.
+    const [clearKey, setClearKey] = useState<boolean | null>(null);
+    useEffect(() => { void canPlayClearKey().then(setClearKey); }, []);
+    const usable = useMemo(
+        () => (clearKey === false ? (sources ?? []).filter((s) => !dashOf(resolveEmbedUrl(s))) : sources ?? []),
+        [sources, clearKey],
+    );
+
     // Global order: proven-good (by crowd score) → unknown → bad. Bad ones are
     // silently deprioritized — never rendered differently.
     const globallyOrdered = useMemo(() => {
-        if (!sources?.length) return [];
+        if (!usable.length) return [];
         const good: MatchSource[] = [];
         const unknown: MatchSource[] = [];
         const bad: MatchSource[] = [];
-        for (const s of sources) {
+        for (const s of usable) {
             const key = sourceKeyOf(s);
             if (isBad(key)) bad.push(s);
             else if (goodRank(key) !== -1) good.push(s);
@@ -68,7 +79,7 @@ export default function EmbedMatchPlayer({
         good.sort((a, b) => goodRank(sourceKeyOf(a)) - goodRank(sourceKeyOf(b)));
         unknown.sort((a, b) => Number(!!b.hd) - Number(!!a.hd)); // untested: try HD first
         return [...good, ...unknown, ...bad];
-    }, [sources, isBad, goodRank]);
+    }, [usable, isBad, goodRank]);
 
     // Distinct language tabs, ordered by descending count so the most common
     // language for this match shows first.
@@ -152,7 +163,11 @@ export default function EmbedMatchPlayer({
         return (
             <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 bg-gray-900 text-gray-400 rounded-xl border border-gray-800">
                 <AlertTriangle className="h-6 w-6" />
-                <p className="text-sm">No stream available for this match.</p>
+                <p className="text-sm">
+                    {sources?.length && clearKey === false
+                        ? 'This stream doesn’t play on this device. Try a computer or an Android phone.'
+                        : 'No stream available for this match.'}
+                </p>
             </div>
         );
     }
@@ -160,7 +175,9 @@ export default function EmbedMatchPlayer({
     return (
         <div className="space-y-3">
             <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-gray-800">
-                {dash ? (
+                {dash && !clearKey ? (
+                    <div className="absolute inset-0 bg-black" />
+                ) : dash ? (
                     <DashVideo
                         key={activeSrc}
                         manifest={dash.manifest}

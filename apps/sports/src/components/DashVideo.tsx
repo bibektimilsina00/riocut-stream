@@ -22,6 +22,27 @@ export function dashOf(url: string): { manifest: string; keys: Record<string, st
     }
 }
 
+/**
+ * ClearKey needs EME + MSE. iPhone/iPad have neither for ClearKey (every iOS
+ * browser is WebKit, which only does FairPlay), and EME is off on plain-http
+ * pages (e.g. a phone hitting the dev server by LAN IP). Desktop and Android
+ * Chrome/Firefox over HTTPS are fine.
+ */
+export async function canPlayClearKey(): Promise<boolean> {
+    if (typeof navigator === 'undefined' || !navigator.requestMediaKeySystemAccess) return false;
+    if (!('MediaSource' in window) && !('ManagedMediaSource' in window)) return false;
+    try {
+        await navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{
+            initDataTypes: ['cenc'],
+            videoCapabilities: [{ contentType: 'video/mp4; codecs="avc1.64001F"' }],
+            audioCapabilities: [{ contentType: 'audio/mp4; codecs="mp4a.40.2"' }],
+        }]);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 const STALL_MS = 10_000;
 
 /** 135 → "2:15", 3725 → "1:02:05" */
