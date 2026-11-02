@@ -44,6 +44,7 @@ export async function canPlayClearKey(): Promise<boolean> {
 }
 
 const STALL_MS = 10_000;
+const IDLE_MS = 3_000;
 
 /** 135 → "2:15", 3725 → "1:02:05" */
 const clock = (sec: number) => {
@@ -71,6 +72,18 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
     const bar = useRef<HTMLDivElement>(null);
     const [paused, setPaused] = useState(false);
     const [muted, setMuted] = useState(false);
+    // Controls show on activity and hide after IDLE_MS (mouse never "leaves" in
+    // fullscreen, so hover alone can't hide them). Paused/scrubbing keep them up.
+    const [active, setActive] = useState(true);
+    const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const poke = () => {
+        setActive(true);
+        if (idleTimer.current) clearTimeout(idleTimer.current);
+        idleTimer.current = setTimeout(() => setActive(false), IDLE_MS);
+    };
+    useEffect(() => { poke(); return () => { if (idleTimer.current) clearTimeout(idleTimer.current); }; }, []);
+    // A tap on hidden controls (touch) should reveal them, not pause the match.
+    const tapRevealed = useRef(false);
     const stallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const waiting = () => {
         if (!stallTimer.current) stallTimer.current = setTimeout(() => onStall(true), STALL_MS);
@@ -126,6 +139,7 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
         (video() as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen?.(); // iOS
     };
     const btn = 'p-1.5 rounded hover:bg-white/15 text-white';
+    const showControls = active || paused || scrubbing;
     // We sit ~10s behind the edge on purpose (presentation delay), so allow some slack.
     const LIVE_SLACK = 20;
     const span = range.end - range.start;
@@ -154,14 +168,24 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
     // Native controls show a clock counted from the channel's 2025 start
     // ("14178:51:45"), so we draw our own: DVR seek bar, play, sound, LIVE, fullscreen.
     return (
-        <div ref={box} className="group absolute inset-0 bg-black">
+        <div
+            ref={box}
+            className={`absolute inset-0 bg-black ${showControls ? '' : 'cursor-none'}`}
+            onPointerMove={poke}
+            onPointerDown={(e) => {
+                tapRevealed.current = e.pointerType === 'touch' && !showControls;
+                poke();
+            }}
+            onKeyDown={poke}
+            onMouseLeave={() => setActive(false)}
+        >
             <video
                 ref={ref}
                 title={title}
                 className="h-full w-full"
                 autoPlay
                 playsInline
-                onClick={togglePlay}
+                onClick={() => { if (!tapRevealed.current) togglePlay(); }}
                 onWaiting={waiting}
                 onPlaying={playing}
                 onPlay={() => setPaused(false)}
@@ -173,7 +197,7 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
                     if (r) setRange({ start: r.start, end: r.end, cur: e.currentTarget.currentTime });
                 }}
             />
-            <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-8 transition-opacity ${paused || scrubbing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+            <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-8 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
                 {span > 0 && (
                     <div
                         ref={bar}
