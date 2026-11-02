@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Maximize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 
 /**
  * Our own player for DASH + ClearKey feeds (Yono's wtvplyrrr wrapper, FanCode).
@@ -32,6 +33,10 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
     onStall: (stalled: boolean) => void;
 }) {
     const ref = useRef<HTMLVideoElement>(null);
+    const box = useRef<HTMLDivElement>(null);
+    const playerRef = useRef<{ goToLive: () => void } | null>(null);
+    const [paused, setPaused] = useState(false);
+    const [muted, setMuted] = useState(false);
     const stallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const waiting = () => {
         if (!stallTimer.current) stallTimer.current = setTimeout(() => onStall(true), STALL_MS);
@@ -52,6 +57,7 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
             shaka.polyfill.installAll();
             if (!shaka.Player.isBrowserSupported()) return onFatal();
             const player = new shaka.Player();
+            playerRef.current = player;
             destroy = () => { void player.destroy(); };
             await player.attach(video);
             player.configure({
@@ -78,16 +84,50 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [manifest]);
 
+    const video = () => ref.current!;
+    const togglePlay = () => (video().paused ? void video().play() : video().pause());
+    const fullscreen = () => {
+        if (document.fullscreenElement) return void document.exitFullscreen();
+        if (box.current?.requestFullscreen) return void box.current.requestFullscreen();
+        (video() as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen?.(); // iOS
+    };
+    const btn = 'p-1.5 rounded hover:bg-white/15 text-white';
+
+    // Native controls show a seek bar + a clock counted from the channel's 2025
+    // start ("14178:51:45"); a live feed only needs play, sound, LIVE, fullscreen.
     return (
-        <video
-            ref={ref}
-            title={title}
-            className="absolute inset-0 h-full w-full bg-black"
-            controls
-            autoPlay
-            playsInline
-            onWaiting={waiting}
-            onPlaying={playing}
-        />
+        <div ref={box} className="group absolute inset-0 bg-black">
+            <video
+                ref={ref}
+                title={title}
+                className="h-full w-full"
+                autoPlay
+                playsInline
+                onClick={togglePlay}
+                onWaiting={waiting}
+                onPlaying={playing}
+                onPlay={() => setPaused(false)}
+                onPause={() => setPaused(true)}
+                onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
+            />
+            <div className={`absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-8 transition-opacity ${paused ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+                <button className={btn} onClick={togglePlay} aria-label={paused ? 'Play' : 'Pause'}>
+                    {paused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
+                </button>
+                <button className={btn} onClick={() => { video().muted = !video().muted; }} aria-label={muted ? 'Unmute' : 'Mute'}>
+                    {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                </button>
+                <button
+                    className="flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold tracking-wide text-white hover:bg-white/15"
+                    onClick={() => { playerRef.current?.goToLive(); void video().play(); }}
+                    aria-label="Jump to live"
+                >
+                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" /> LIVE
+                </button>
+                <button className={`${btn} ml-auto`} onClick={fullscreen} aria-label="Fullscreen">
+                    <Maximize className="h-5 w-5" />
+                </button>
+            </div>
+        </div>
     );
 }
