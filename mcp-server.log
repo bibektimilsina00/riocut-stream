@@ -1,0 +1,432 @@
+2026-10-23 21:55:44.874 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-23 21:55:44.979 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-23 21:55:44.986 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-23 21:55:44.986 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-23 21:55:44.986 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-23 21:55:44.986 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-23 21:55:44.987 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-23 21:55:44.987 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-23 21:55:44.988 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-23 21:55:44.988 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-23 21:55:44.988 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-23 21:55:44.988 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-23 21:55:44.988 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-23 21:55:45.120 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-23 21:55:45.201 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-23 21:55:45.208 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-23 21:55:45.208 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-23 21:55:45.208 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-23 21:55:45.209 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-23 21:55:45.209 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-23 21:55:45.209 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-23 21:55:45.209 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-23 21:55:45.209 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-23 21:55:45.210 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-23 21:55:45.210 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-23 21:55:45.210 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-23 22:08:41.600 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-23 22:08:41.696 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-23 22:08:41.703 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-23 22:08:41.703 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-23 22:08:41.703 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-23 22:08:41.704 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-23 22:08:41.704 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-23 22:08:41.704 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-23 22:08:41.705 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-23 22:08:41.705 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-23 22:08:41.705 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-23 22:08:41.705 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-23 22:08:41.705 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-23 22:08:41.824 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-23 22:08:41.895 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-23 22:08:41.902 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-23 22:08:41.902 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-23 22:08:41.902 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-23 22:08:41.902 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-23 22:08:41.902 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-23 22:08:41.902 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-23 22:08:41.903 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-23 22:08:41.903 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-23 22:08:41.903 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-23 22:08:41.903 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-23 22:08:41.903 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-23 22:53:10.235 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-23 22:53:10.353 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-23 22:53:10.361 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-23 22:53:10.361 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-23 22:53:10.361 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-23 22:53:10.361 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-23 22:53:10.361 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-23 22:53:10.362 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-23 22:53:10.362 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-23 22:53:10.363 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-23 22:53:10.363 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-23 22:53:10.363 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-23 22:53:10.363 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-23 22:53:10.495 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-23 22:53:10.576 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-23 22:53:10.582 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-23 22:53:10.582 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-23 22:53:10.582 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-23 22:53:10.582 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-23 22:53:10.582 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-23 22:53:10.582 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-23 22:53:10.583 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-23 22:53:10.583 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-23 22:53:10.583 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-23 22:53:10.583 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-23 22:53:10.583 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-26 18:57:45.409 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-26 18:57:45.536 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-26 18:57:45.544 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-26 18:57:45.544 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-26 18:57:45.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-26 18:57:45.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-26 18:57:45.545 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-26 18:57:45.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-26 18:57:45.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-26 18:57:45.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-26 18:57:45.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-26 18:57:45.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-26 18:57:45.547 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-26 18:57:45.683 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-26 18:57:45.775 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-26 18:57:45.782 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-26 18:57:45.782 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-26 18:57:45.782 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-26 18:57:45.783 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-26 18:57:45.783 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-26 18:57:45.783 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-26 18:57:45.783 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-26 18:57:45.784 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-26 18:57:45.784 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-26 18:57:45.784 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-26 18:57:45.784 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-27 21:56:39.195 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-27 21:56:39.307 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-27 21:56:39.316 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-27 21:56:39.316 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-27 21:56:39.316 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-27 21:56:39.316 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-27 21:56:39.316 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-27 21:56:39.316 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-27 21:56:39.317 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-27 21:56:39.317 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-27 21:56:39.317 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-27 21:56:39.318 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-27 21:56:39.318 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-10-27 21:56:39.447 [main] INFO  Main - Starting Play Store MCP Server...
+2026-10-27 21:56:39.532 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-10-27 21:56:39.538 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-10-27 21:56:39.538 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-10-27 21:56:39.538 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-10-27 21:56:39.539 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-10-27 21:56:39.539 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-10-27 21:56:39.539 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-10-27 21:56:39.539 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-10-27 21:56:39.540 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-10-27 21:56:39.540 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-10-27 21:56:39.540 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-10-27 21:56:39.540 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 14:36:50.841 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 14:36:50.956 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 14:36:50.964 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 14:36:50.964 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 14:36:50.964 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 14:36:50.965 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 14:36:50.965 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 14:36:50.965 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 14:36:50.966 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 14:36:50.966 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 14:36:50.966 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 14:36:50.966 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 14:36:50.966 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 14:36:51.106 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 14:36:51.194 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 14:36:51.202 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 14:36:51.202 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 14:36:51.202 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 14:36:51.202 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 14:36:51.202 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 14:36:51.202 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 14:36:51.203 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 14:36:51.203 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 14:36:51.203 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 14:36:51.203 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 14:36:51.203 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 14:58:51.291 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 14:58:51.407 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 14:58:51.415 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 14:58:51.415 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 14:58:51.415 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 14:58:51.415 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 14:58:51.415 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 14:58:51.415 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 14:58:51.416 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 14:58:51.416 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 14:58:51.416 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 14:58:51.416 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 14:58:51.417 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 14:58:51.570 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 14:58:51.659 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 14:58:51.666 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 14:58:51.666 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 14:58:51.666 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 14:58:51.667 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 14:58:51.667 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 14:58:51.667 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 14:58:51.667 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 14:58:51.667 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 14:58:51.667 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 14:58:51.667 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 14:58:51.667 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 14:59:05.231 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 14:59:05.331 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 14:59:05.338 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 14:59:05.338 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 14:59:05.339 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 14:59:05.339 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 14:59:05.339 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 14:59:05.339 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 14:59:05.340 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 14:59:05.340 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 14:59:05.340 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 14:59:05.340 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 14:59:05.340 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 14:59:05.462 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 14:59:05.538 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 14:59:05.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 14:59:05.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 14:59:05.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 14:59:05.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 14:59:05.545 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 14:59:05.545 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 14:59:05.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 14:59:05.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 14:59:05.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 14:59:05.546 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 14:59:05.546 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 15:53:17.665 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 15:53:17.792 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 15:53:17.800 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 15:53:17.800 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 15:53:17.800 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 15:53:17.801 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 15:53:17.801 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 15:53:17.801 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 15:53:17.802 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 15:53:17.802 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 15:53:17.802 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 15:53:17.802 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 15:53:17.802 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)
+2026-11-02 15:53:17.941 [main] INFO  Main - Starting Play Store MCP Server...
+2026-11-02 15:53:18.026 [main] DEBUG i.m.kotlin.sdk.server.Server - Initializing MCP server with capabilities: ServerCapabilities(experimental={}, sampling={}, logging={}, prompts=Prompts(listChanged=true), resources=null, tools=Tools(listChanged=true))
+2026-11-02 15:53:18.032 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Setting up Play Store MCP Server capabilities:
+2026-11-02 15:53:18.032 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Tools: ListChanged=true
+2026-11-02 15:53:18.032 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Prompts: ListChanged=true
+2026-11-02 15:53:18.033 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Logging: Enabled=true
+2026-11-02 15:53:18.033 [main] DEBUG io.devexpert.mcp.PlayStoreMcpServer - Setting up MCP tools...
+2026-11-02 15:53:18.033 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Initializing Play Store Service...
+2026-11-02 15:53:18.033 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - Play Store Configuration:
+2026-11-02 15:53:18.033 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Service Account Key Path: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+2026-11-02 15:53:18.033 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Application Name: Play Store MCP Server
+2026-11-02 15:53:18.033 [main] INFO  io.devexpert.mcp.PlayStoreMcpServer - - Default Track: internal
+2026-11-02 15:53:18.034 [main] ERROR Main - Failed to start Play Store MCP Server
+java.lang.IllegalArgumentException: Service account key not found: /Users/bibektimilsina/.config/mcp-keys/play-service-account.json
+	at io.devexpert.playstore.PlayStoreService.initializeClient(PlayStoreService.kt:30)
+	at io.devexpert.playstore.PlayStoreService.<init>(PlayStoreService.kt:16)
+	at io.devexpert.mcp.PlayStoreMcpServer.initializePlayStoreService(PlayStoreMcpServer.kt:62)
+	at io.devexpert.mcp.PlayStoreMcpServer.playStoreService_delegate$lambda$0(PlayStoreMcpServer.kt:39)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at io.devexpert.mcp.PlayStoreMcpServer.getPlayStoreService(PlayStoreMcpServer.kt:38)
+	at io.devexpert.mcp.PlayStoreMcpServer.setupTools(PlayStoreMcpServer.kt:78)
+	at io.devexpert.mcp.PlayStoreMcpServer.initialize(PlayStoreMcpServer.kt:71)
+	at io.devexpert.MainKt.main(main.kt:15)
+	at io.devexpert.MainKt.main(main.kt)

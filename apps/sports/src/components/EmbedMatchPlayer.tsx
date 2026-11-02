@@ -5,6 +5,7 @@ import { AlertTriangle, SkipForward } from 'lucide-react';
 import { resolveEmbedUrl, type MatchSource } from '@/lib/sportsrc';
 import { useBadSources } from '@/lib/hooks/useBadSources';
 import HlsVideo from './HlsVideo';
+import DashVideo, { dashOf } from './DashVideo';
 
 /**
  * Multi-source player with automatic + user-driven failover.
@@ -96,6 +97,7 @@ export default function EmbedMatchPlayer({
     const active = visible.find((s) => sourceKeyOf(s) === pickedKey) ?? visible[0] ?? null;
     const activeIndex = active ? visible.indexOf(active) : -1;
     const activeSrc = active ? resolveEmbedUrl(active) : '';
+    const dash = dashOf(activeSrc);
     const activeKey = active ? sourceKeyOf(active) : '';
 
     const advance = useCallback((opts: { report: 'auto-failed' | 'stall' | null }) => {
@@ -158,7 +160,17 @@ export default function EmbedMatchPlayer({
     return (
         <div className="space-y-3">
             <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-gray-800">
-                {/\.m3u8(\?|$)/.test(activeSrc) ? (
+                {dash ? (
+                    <DashVideo
+                        key={activeSrc}
+                        manifest={dash.manifest}
+                        keys={dash.keys}
+                        title={title ?? 'Live stream'}
+                        onReady={onLoad}
+                        onFatal={() => autoAdvance('auto-failed')}
+                        onStall={setShowStall}
+                    />
+                ) : /\.m3u8(\?|$)/.test(activeSrc) ? (
                     <HlsVideo
                         key={activeSrc}
                         src={activeSrc}

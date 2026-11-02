@@ -72,6 +72,32 @@ export function parseChannelTable(html: string): Map<string, string> {
     return table;
 }
 
+/** Known direct clean player mappings for Yono stream IDs */
+export const DIRECT_CLEAN_PLAYERS: Record<string, string> = {
+    NPL: 'https://yonotv.pages.dev/fc',
+    NPL11: 'https://yonotv.pages.dev/fc',
+    FC: 'https://yonotv.pages.dev/wtvplyrrr?manifest=https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/b3b3fkmrbl/out/v1/1084d5c9a97a4c5b9f9554c88f486646/cenc.mpd&keyid=82dfca238e8c4b430a3269db71965db9&key=a00b28caf4ac628e77a553d440c0ddca',
+    FC2: 'https://yonotv.pages.dev/wtvplyrrr?manifest=https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/avqlywnuzx/out/v1/aefca6420f944a9482e117f315de535f/cenc.mpd&keyid=1994b1df7dfd2e8a8d7b9bf3fb900285&key=22a1444b3da18e139191665b3d652835',
+    FC3: 'https://yonotv.pages.dev/wtvplyrrr?manifest=https://abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash-sd/enc/iwpchve3wl/out/v1/946019f85dc64ae99ff9ce64a9727a62/cenc-sd.mpd&keyid=286eb7dc538143790fa9913639531920&key=e3f5cb08d14d9e9c08438c673819540f',
+};
+
+/**
+ * Yono's `/fc` page hard-codes its DASH stream + ClearKey. Rewrite it into the
+ * `wtvplyrrr?manifest=…` form our DashVideo plays directly (video only, no page).
+ * Any other URL, or a page we can't parse, comes back unchanged.
+ */
+export async function unwrapFc(url: string): Promise<string> {
+    if (!/^https:\/\/yonotv\.pages\.dev\/fc$/.test(url)) return url;
+    const html = await axios.get<string>(url, { timeout: 3_500, responseType: 'text' }).then((r) => r.data).catch(() => '');
+    const manifest = html.match(/STREAM_URL\s*=\s*'([^']+)'/)?.[1];
+    const [keyid, key] = html.match(/RAW_KEYS\s*=\s*'([0-9a-f]+:[0-9a-f]+)'/i)?.[1].split(':') ?? [];
+    if (!manifest) return url;
+    const out = new URL('https://yonotv.pages.dev/wtvplyrrr');
+    out.searchParams.set('manifest', manifest);
+    if (keyid && key) { out.searchParams.set('keyid', keyid); out.searchParams.set('key', key); }
+    return out.toString();
+}
+
 /** Player URL → something we can play ourselves, or null to drop it. */
 export function playableFrom(playerUrl: string): { url: string; kind: 'hls' | 'iframe' } | null {
     let u: URL;
@@ -80,11 +106,47 @@ export function playableFrom(playerUrl: string): { url: string; kind: 'hls' | 'i
     } catch {
         return null;
     }
+
+    // Never embed full YoNo website pages (/page, /pagenpl). If passed, unwrap to the clean player.
+    if (/\/(page|pagenpl)$/.test(u.pathname)) {
+        const src = u.searchParams.get('src');
+        if (!src) return null;
+        try {
+            const innerUrl = new URL(src);
+            const id = innerUrl.searchParams.get('id');
+            if (id && DIRECT_CLEAN_PLAYERS[id]) {
+                return playableFrom(DIRECT_CLEAN_PLAYERS[id]);
+            }
+            return playableFrom(src);
+        } catch {
+            return null;
+        }
+    }
+
+    // Never embed LINK channel selection pages. If passed, unwrap by id.
+    if (/\/LINK$/i.test(u.pathname)) {
+        const id = u.searchParams.get('id');
+        if (id && DIRECT_CLEAN_PLAYERS[id]) {
+            return playableFrom(DIRECT_CLEAN_PLAYERS[id]);
+        }
+        return null;
+    }
+
+    // Standalone clean video players on Cloudflare Pages (Shaka Player / full window)
+    if (/\/(fc|wtv|tnt\d*|crictv)$/.test(u.pathname)) return { url: playerUrl, kind: 'iframe' };
+    if (/\/wtvplyrrr$/.test(u.pathname)) return { url: playerUrl, kind: 'iframe' };
+
     const src = u.searchParams.get('src');
     if (!src || /paid/i.test(src)) return null;
-    if (/\/(hls)?plyrr$/.test(u.pathname) && /\.m3u8(\?|$)/.test(src)) return { url: src, kind: 'hls' };
-    if (/\/iplyrr$/.test(u.pathname) && /^https:\/\//.test(src)) return { url: src, kind: 'iframe' };
-    return null; // wtvplyrrr (DRM keys), bare wrappers, "starts soon" pages
+
+    // HLS players: plyrr, hlsplyrr, dplyrr
+    if (/\/(hls|d)?plyrr$/.test(u.pathname) && /\.m3u8(\?|$)/.test(src)) return { url: src, kind: 'hls' };
+
+    // Iframe player wrappers (e.g. iplyrr wrapping finalspot, truckrefuse)
+    // Keep the playerUrl wrapper so domain/referer protection is satisfied
+    if (/\/iplyrr$/.test(u.pathname) && /^https:\/\//.test(src)) return { url: playerUrl, kind: 'iframe' };
+
+    return null;
 }
 
 export class YonoProvider implements SportsProvider {
@@ -152,13 +214,52 @@ export class YonoProvider implements SportsProvider {
 
     async getMatchDetail(category: string, id: string): Promise<MatchDetail | null> {
         if (category.toLowerCase() !== 'cricket' || !/^[a-z0-9_-]+$/i.test(id)) return null;
-        const item = (await this.schedule()).find((i) => matchIdOf(i) === id && isMatch(i));
+        const item = (await this.schedule()).find((i) => (matchIdOf(i) === id || idOf(i) === id) && isMatch(i));
         if (!item) return null;
 
         const data = await this.get<RawMatchData>(`/${idOf(item)}.json`).catch((): RawMatchData => ({}));
         const sources: MatchSource[] = [];
         const seen = new Set<string>();
         const tables = new Map<string, Map<string, string>>();
+
+        const addPlayer = (k: string, playerUrl: string | undefined, label?: string) => {
+            if (!playerUrl) return;
+            const playable = playableFrom(playerUrl);
+            if (!playable || seen.has(playable.url)) return;
+            seen.add(playable.url);
+            sources.push({
+                id: `${id}-${k}`,
+                streamNo: sources.length + 1,
+                language: 'English',
+                hd: playable.url.includes('/fc') || playable.url.includes('dplyrr') || playable.url.includes('id=FC') || playable.url.includes('id=NPL11'),
+                embedUrl: playable.url,
+                source: label ?? `Yono ${k}`,
+                provider: this.name,
+            });
+        };
+
+        // Ensure the central LINK channel table is available
+        const mainTableUrl = 'https://yonotv.pages.dev/LINK';
+        if (!tables.has(mainTableUrl)) {
+            const html = await this.get<string>(mainTableUrl, 'text').catch(() => '');
+            if (html) tables.set(mainTableUrl, parseChannelTable(html));
+        }
+        const mainTable = tables.get(mainTableUrl);
+
+        const feedId = idOf(item)?.toUpperCase() ?? '';
+        const isNpl = feedId === 'NPL' || /npl/i.test(item.league ?? '') || /npl/i.test(item.home_team ?? '');
+
+        // Verified clean stream URLs (direct video player, no YoNoTV website chrome)
+        if (isNpl) {
+            const npl11 = mainTable?.get('NPL11') ?? DIRECT_CLEAN_PLAYERS.NPL11;
+            const fc = mainTable?.get('FC') ?? DIRECT_CLEAN_PLAYERS.FC;
+            const fc3 = mainTable?.get('FC3') ?? DIRECT_CLEAN_PLAYERS.FC3;
+
+            addPlayer('NPL11-direct', npl11, 'NPL Live (NPL11)');
+            addPlayer('FC-direct', fc, 'FanCode Live (FC)');
+            addPlayer('FC3-direct', fc3, 'FanCode 3 (FC3)');
+        }
+
         for (const link of data.telecast_links ?? []) {
             // telecast url: page.html?src=<LINK page>?id=<KEY>; anything else is an ad hop.
             let linkPage: URL;
@@ -174,20 +275,58 @@ export class YonoProvider implements SportsProvider {
                 const html = await this.get<string>(tableUrl, 'text').catch(() => '');
                 tables.set(tableUrl, parseChannelTable(html));
             }
-            const player = tables.get(tableUrl)!.get(key);
-            const playable = player ? playableFrom(player) : null;
-            if (!playable || seen.has(playable.url)) continue;
-            seen.add(playable.url);
-            sources.push({
-                id: `${id}-${key}`,
-                streamNo: sources.length + 1,
-                language: 'English',
-                hd: false,
-                embedUrl: playable.url,
-                source: `Yono ${key}`,
-                provider: this.name,
-            });
+            const table = tables.get(tableUrl)!;
+            // 1. Direct lookup
+            let player = table.get(key);
+            // 2. Yono maps single-digits to doubled digits: NPL -> NPL11, NPL2 -> NPL22, NPL3 -> NPL33
+            if (!player) {
+                const doubled = key.replace(/(\d*)$/, (m) => (m ? m + m : '11'));
+                player = table.get(doubled);
+            }
+            // 3. Case-insensitive lookup
+            if (!player) {
+                const lower = key.toLowerCase();
+                for (const [k, v] of table.entries()) {
+                    if (k.toLowerCase() === lower) {
+                        player = v;
+                        break;
+                    }
+                }
+            }
+            addPlayer(key, player, link.name ? link.name.replace(/^Link \d+:\s*/i, 'Yono ') : undefined);
         }
-        return { ...this.toMatch(item, id), sources };
+
+
+        // Sweep the channel table for any extra channels matching this match's feed prefix
+        // (e.g. Yono added NPL44, NPL55 to LINK table but not to npl.json telecast_links)
+        if (feedId) {
+            for (const table of tables.values()) {
+                for (const [k, playerUrl] of table.entries()) {
+                    if (k.toUpperCase().startsWith(feedId)) {
+                        addPlayer(k, playerUrl);
+                    }
+                }
+            }
+        }
+
+        // For NPL matches, also pull in FanCode feeds (FC, FC2, FC3) if available
+        if (isNpl) {
+            for (const table of tables.values()) {
+                if (table.has('FC')) addPlayer('FC', table.get('FC'), 'FanCode Direct (FC)');
+                if (table.has('FC3')) addPlayer('FC3', table.get('FC3'), 'FanCode 3 Direct (FC3)');
+                if (table.has('FC2')) addPlayer('FC2', table.get('FC2'), 'FanCode 2 Direct (FC2)');
+            }
+        }
+
+        // /fc is a page; swap it for its raw stream. It often mirrors FC, so drop repeats.
+        const urls = new Set<string>();
+        const playable: MatchSource[] = [];
+        for (const s of sources) {
+            const embedUrl = await unwrapFc(s.embedUrl);
+            if (urls.has(embedUrl)) continue;
+            urls.add(embedUrl);
+            playable.push({ ...s, embedUrl, streamNo: playable.length + 1 });
+        }
+        return { ...this.toMatch(item, id), sources: playable };
     }
 }
