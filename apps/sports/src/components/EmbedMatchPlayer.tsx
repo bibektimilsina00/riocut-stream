@@ -271,12 +271,10 @@ export default function EmbedMatchPlayer({
                                     : 'border-gray-800 bg-gray-900 text-gray-300 hover:border-teal-500/40 hover:text-teal-400')
                         }
                     >
-                        <span>{s.source ?? `#${s.streamNo}`}</span>
+                        {/* Upstream labels/providers ("Yono NPL44", "FanCode") stay out of the UI. */}
+                        <span>Stream {i + 1}</span>
                         {s.hd && (
                             <span className="text-[10px] px-1 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 leading-none">HD</span>
-                        )}
-                        {s.provider && (
-                            <span className="text-[10px] text-gray-500">· {s.provider}</span>
                         )}
                     </button>
                 ))}
