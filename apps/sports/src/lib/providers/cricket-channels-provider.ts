@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Match, MatchDetail, MatchSource, SportCategory } from '../sportsrc';
 import { SportsProvider } from './base';
 import { getHeaderEvents } from '../espn';
-import { DIRECT_CLEAN_PLAYERS, parseChannelTable, unwrapFc } from './yono-provider';
+import { DIRECT_CLEAN_PLAYERS, parseChannelTable, unwrapPlayerPage } from './yono-provider';
 
 /**
  * Cricket sources that aren't a per-match feed, so cricket never hangs on one
@@ -159,7 +159,7 @@ export class CricketChannelsProvider implements SportsProvider {
         } catch {
             // keep fallback defaults
         }
-        out.NPL11 = await unwrapFc(out.NPL11);
+        [out.NPL11, out.FC, out.FC3] = await Promise.all([out.NPL11, out.FC, out.FC3].map(unwrapPlayerPage));
         return out;
     }
 
