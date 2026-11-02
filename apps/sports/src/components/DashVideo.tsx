@@ -24,6 +24,12 @@ export function dashOf(url: string): { manifest: string; keys: Record<string, st
 
 const STALL_MS = 10_000;
 
+/** 135 → "2:15", 3725 → "1:02:05" */
+const clock = (sec: number) => {
+    const s = Math.floor(sec), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = String(s % 60).padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${r}` : `${m}:${r}`;
+};
+
 export default function DashVideo({ manifest, keys, title, onReady, onFatal, onStall }: {
     manifest: string;
     keys: Record<string, string>;
@@ -34,7 +40,10 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
 }) {
     const ref = useRef<HTMLVideoElement>(null);
     const box = useRef<HTMLDivElement>(null);
-    const playerRef = useRef<{ goToLive: () => void } | null>(null);
+    const playerRef = useRef<{ goToLive: () => void; seekRange: () => { start: number; end: number } } | null>(null);
+    // DVR window (this feed keeps ~1h) and where we are in it; drag holds the thumb while scrubbing.
+    const [range, setRange] = useState({ start: 0, end: 0, cur: 0 });
+    const [drag, setDrag] = useState<number | null>(null);
     const [paused, setPaused] = useState(false);
     const [muted, setMuted] = useState(false);
     const stallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -92,9 +101,16 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
         (video() as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen?.(); // iOS
     };
     const btn = 'p-1.5 rounded hover:bg-white/15 text-white';
+    const commitSeek = () => {
+        if (drag !== null) video().currentTime = drag;
+        setDrag(null);
+    };
+    // We sit ~10s behind the edge on purpose (presentation delay), so allow some slack.
+    const behind = Math.max(0, range.end - (drag ?? range.cur));
+    const atLive = behind < 20;
 
-    // Native controls show a seek bar + a clock counted from the channel's 2025
-    // start ("14178:51:45"); a live feed only needs play, sound, LIVE, fullscreen.
+    // Native controls show a clock counted from the channel's 2025 start
+    // ("14178:51:45"), so we draw our own: DVR seek bar, play, sound, LIVE, fullscreen.
     return (
         <div ref={box} className="group absolute inset-0 bg-black">
             <video
@@ -109,8 +125,27 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
                 onPlay={() => setPaused(false)}
                 onPause={() => setPaused(true)}
                 onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
+                onTimeUpdate={(e) => {
+                    const r = playerRef.current?.seekRange();
+                    if (r) setRange({ start: r.start, end: r.end, cur: e.currentTarget.currentTime });
+                }}
             />
-            <div className={`absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-8 transition-opacity ${paused ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+            <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-8 transition-opacity ${paused ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+                {range.end > range.start && (
+                    <input
+                        type="range"
+                        aria-label="Seek"
+                        className="mb-1 block w-full cursor-pointer accent-red-500"
+                        min={range.start}
+                        max={range.end}
+                        step={1}
+                        value={drag ?? range.cur}
+                        onChange={(e) => setDrag(Number(e.currentTarget.value))}
+                        onPointerUp={commitSeek}
+                        onKeyUp={commitSeek}
+                    />
+                )}
+                <div className="flex items-center gap-2">
                 <button className={btn} onClick={togglePlay} aria-label={paused ? 'Play' : 'Pause'}>
                     {paused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
                 </button>
@@ -122,11 +157,13 @@ export default function DashVideo({ manifest, keys, title, onReady, onFatal, onS
                     onClick={() => { playerRef.current?.goToLive(); void video().play(); }}
                     aria-label="Jump to live"
                 >
-                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" /> LIVE
+                    <span className={`h-2 w-2 rounded-full ${atLive ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} /> LIVE
                 </button>
+                {!atLive && <span className="text-xs tabular-nums text-gray-300">−{clock(behind)}</span>}
                 <button className={`${btn} ml-auto`} onClick={fullscreen} aria-label="Fullscreen">
                     <Maximize className="h-5 w-5" />
                 </button>
+                </div>
             </div>
         </div>
     );
