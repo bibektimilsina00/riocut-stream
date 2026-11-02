@@ -38,6 +38,27 @@ const NPL_EDGES = [
 ];
 const nplUrl = (n: number, host = NPL_EDGES[0].host) => `https://${host}/npl/live_match${n}/playlist.m3u8`;
 
+/**
+ * A finished match's slot can keep answering 200 with yesterday's leftover
+ * playlist (seen: slot 6 still serving a finished match a day later), so a
+ * 2xx alone doesn't mean "live right now". The playlist embeds a short-lived
+ * access token (`wmsAuthSign=<base64>...&id=<JWT>`) that NetTV's own player
+ * relies on to fetch segments; once that JWT's `exp` has passed the slot is
+ * stale even though the manifest itself still loads. Treat "can't read the
+ * token" (format drift) as fresh rather than silently hiding every feed.
+ */
+function isFreshNplFeed(playlist: string): boolean {
+    const wms = playlist.match(/wmsAuthSign=([^&\s"]+)/)?.[1];
+    if (!wms) return true;
+    try {
+        const jwt = Buffer.from(decodeURIComponent(wms), 'base64').toString('utf8').match(/id=([^&]+)/)?.[1];
+        const exp = jwt && JSON.parse(Buffer.from(jwt.split('.')[1], 'base64').toString('utf8')).exp;
+        return typeof exp !== 'number' || exp * 1000 > Date.now();
+    } catch {
+        return true;
+    }
+}
+
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
 type StreamfreeStream = { name?: string; stream_key?: string; thumbnail_url?: string };
@@ -153,8 +174,16 @@ export class CricketChannelsProvider implements SportsProvider {
             axios.head(nplUrl(n), { timeout: 5_000, maxRedirects: 0, validateStatus: (s) => s !== 404 && s < 500 })
                 .then(() => n)
                 .catch(() => null)));
-        const feeds = probes.filter((n): n is number => n !== null);
+        let feeds = probes.filter((n): n is number => n !== null);
         if (!feeds.length) return [];
+
+        // A slot can keep answering even after its match ended (stale token);
+        // drop those before picking which one to show.
+        const fresh = await Promise.all(feeds.map((n) =>
+            axios.get<string>(nplUrl(n), { timeout: 5_000, responseType: 'text' })
+                .then((r) => (isFreshNplFeed(r.data) ? n : null)).catch(() => n)));
+        const freshFeeds = fresh.filter((n): n is number => n !== null);
+        if (freshFeeds.length) feeds = freshFeeds;
 
         const cleanSources = await this.cleanNplSources();
 
