@@ -45,13 +45,23 @@ export default function HlsVideo({ src, title, onReady, onFatal, onStall }: {
         if (!video) return;
         let destroy = () => { };
         let cancelled = false;
+        // Some hosts (NetTV) hotlink-block on Referer: a real browser loading
+        // this src always sends ours, which they 403 — plain curl testing
+        // without a Referer missed this. The hls.js path below drops it via a
+        // custom fetch loader; HTMLVideoElement has no referrerPolicy to set
+        // for the native-HLS (Safari) path, so that one still just fails over.
         if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = src;
             start(video);
         } else {
-            import('hls.js').then(({ default: Hls }) => {
+            import('hls.js').then(({ default: Hls, FetchLoader }) => {
                 if (cancelled || !Hls.isSupported()) { if (!cancelled) fail(); return; }
-                const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+                const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    loader: FetchLoader,
+                    fetchSetup: (context, init) => new Request(context.url, { ...init, referrerPolicy: 'no-referrer' }),
+                });
                 hls.loadSource(src);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => { onReady(); start(video); });
