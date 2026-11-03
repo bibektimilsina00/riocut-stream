@@ -174,16 +174,21 @@ export class CricketChannelsProvider implements SportsProvider {
             axios.head(nplUrl(n), { timeout: 5_000, maxRedirects: 0, validateStatus: (s) => s !== 404 && s < 500 })
                 .then(() => n)
                 .catch(() => null)));
+        // No early return on an empty probe: FC/NPL11/FC3 below don't depend on
+        // NetTV at all, so a dead NetTV must not take down the whole match entry
+        // (it did — that's what made ESPN's live-score card unclickable).
         let feeds = probes.filter((n): n is number => n !== null);
-        if (!feeds.length) return [];
 
-        // A slot can keep answering even after its match ended (stale token);
-        // drop those before picking which one to show.
+        // The load balancer 302s every slot number whether or not it's actually
+        // streaming, so that alone (what the probe above checked) never rules
+        // anything out. Follow the redirect and look at the real response: a
+        // 404 definitively means nothing's there; any other error (timeout,
+        // 5xx, DNS) is ambiguous, so keep the slot rather than hide it.
         const fresh = await Promise.all(feeds.map((n) =>
             axios.get<string>(nplUrl(n), { timeout: 5_000, responseType: 'text' })
-                .then((r) => (isFreshNplFeed(r.data) ? n : null)).catch(() => n)));
-        const freshFeeds = fresh.filter((n): n is number => n !== null);
-        if (freshFeeds.length) feeds = freshFeeds;
+                .then((r) => (isFreshNplFeed(r.data) ? n : null))
+                .catch((err) => (axios.isAxiosError(err) && err.response?.status === 404 ? null : n))));
+        feeds = fresh.filter((n): n is number => n !== null);
 
         const cleanSources = await this.cleanNplSources();
 
