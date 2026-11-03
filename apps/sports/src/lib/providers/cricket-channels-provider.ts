@@ -34,7 +34,7 @@ const NPL_ESPN_LEAGUE = 'Nepal Premier League';
 // NetTV's real live CDN host rotates (seen ott-nettv-01, -02, ...) and every
 // request needs a short-lived wmsAuthSign token minted by their own site, so
 // we can't construct this URL — we lift the live one out of Yono's LINK page
-// (same place NPL11/FC/FC3 come from). Yono's own "NP3" table entry points at
+// (same place FC/FC3 come from). Yono's own "NP3" table entry points at
 // `ott-lb.nettv.com.np`, a load balancer that 302s to the real host but drops
 // the token (confirmed: following it 403s) — so we match the tokened URL
 // directly instead of trusting that table entry.
@@ -118,9 +118,8 @@ export class CricketChannelsProvider implements SportsProvider {
         return items.filter((i) => i !== null);
     }
 
-    private async cleanNplSources(): Promise<{ NPL11: string; FC: string; FC3: string; nettv: string | null }> {
+    private async cleanNplSources(): Promise<{ FC: string; FC3: string; nettv: string | null }> {
         const out = {
-            NPL11: DIRECT_CLEAN_PLAYERS.NPL11,
             FC: DIRECT_CLEAN_PLAYERS.FC,
             FC3: DIRECT_CLEAN_PLAYERS.FC3,
             nettv: null as string | null,
@@ -130,7 +129,10 @@ export class CricketChannelsProvider implements SportsProvider {
                 .then((r) => r.data).catch(() => '');
             if (linkHtml) {
                 const table = parseChannelTable(linkHtml);
-                if (table.has('NPL11')) out.NPL11 = table.get('NPL11')!;
+                // Deliberately not reading a "NPL11" entry: Yono dropped it from
+                // this table, and its old hardcoded fallback resolves (via a live
+                // page scrape — its own extra failure mode) to the exact same
+                // manifest/key as FC, so it was a pure, more-fragile duplicate.
                 if (table.has('FC')) out.FC = table.get('FC')!;
                 if (table.has('FC3')) out.FC3 = table.get('FC3')!;
                 out.nettv = linkHtml.match(NETTV_URL_RE)?.[0] ?? null;
@@ -138,15 +140,14 @@ export class CricketChannelsProvider implements SportsProvider {
         } catch {
             // keep fallback defaults
         }
-        [out.NPL11, out.FC, out.FC3] = await Promise.all([out.NPL11, out.FC, out.FC3].map(unwrapPlayerPage));
+        [out.FC, out.FC3] = await Promise.all([out.FC, out.FC3].map(unwrapPlayerPage));
         return out;
     }
 
     /** NetTV first (plain HLS, plays everywhere) then the DRM FanCode fallbacks. */
-    private nplSourceList(id: string, clean: { NPL11: string; FC: string; FC3: string; nettv: string | null }): MatchSource[] {
+    private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null }): MatchSource[] {
         const candidates = [
             clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
-            { url: clean.NPL11, label: 'NPL Live (NPL11)' },
             { url: clean.FC, label: 'FanCode Live (FC)' },
             { url: clean.FC3, label: 'FanCode 3 (FC3)' },
         ].filter((c): c is { url: string; label: string } => !!c);
