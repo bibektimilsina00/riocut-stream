@@ -31,33 +31,14 @@ const PPV_API = 'https://api.ppv.st/api/streams';
 // player page's `let sources = [...]` line.
 const STREAMFREE = 'https://streamfree.top';
 const NPL_ESPN_LEAGUE = 'Nepal Premier League';
-// NetTV CDN load balancer for NPL feeds.
-// (ott-int-nlive edge was retired and resolves to 0.0.0.0).
-const NPL_EDGES = [
-    { host: 'lb-ottnp.nettvstreamz.com', label: 'NetTV' },
-];
-const nplUrl = (n: number, host = NPL_EDGES[0].host) => `https://${host}/npl/live_match${n}/playlist.m3u8`;
-
-/**
- * A finished match's slot can keep answering 200 with yesterday's leftover
- * playlist (seen: slot 6 still serving a finished match a day later), so a
- * 2xx alone doesn't mean "live right now". The playlist embeds a short-lived
- * access token (`wmsAuthSign=<base64>...&id=<JWT>`) that NetTV's own player
- * relies on to fetch segments; once that JWT's `exp` has passed the slot is
- * stale even though the manifest itself still loads. Treat "can't read the
- * token" (format drift) as fresh rather than silently hiding every feed.
- */
-function isFreshNplFeed(playlist: string): boolean {
-    const wms = playlist.match(/wmsAuthSign=([^&\s"]+)/)?.[1];
-    if (!wms) return true;
-    try {
-        const jwt = Buffer.from(decodeURIComponent(wms), 'base64').toString('utf8').match(/id=([^&]+)/)?.[1];
-        const exp = jwt && JSON.parse(Buffer.from(jwt.split('.')[1], 'base64').toString('utf8')).exp;
-        return typeof exp !== 'number' || exp * 1000 > Date.now();
-    } catch {
-        return true;
-    }
-}
+// NetTV's real live CDN host rotates (seen ott-nettv-01, -02, ...) and every
+// request needs a short-lived wmsAuthSign token minted by their own site, so
+// we can't construct this URL — we lift the live one out of Yono's LINK page
+// (same place NPL11/FC/FC3 come from). Yono's own "NP3" table entry points at
+// `ott-lb.nettv.com.np`, a load balancer that 302s to the real host but drops
+// the token (confirmed: following it 403s) — so we match the tokened URL
+// directly instead of trusting that table entry.
+const NETTV_URL_RE = /https:\/\/ott-nettv-\d+\.nettv\.com\.np\/iptvlivestream\/[^"'\s]+wmsAuthSign=[^"'\s&]+/;
 
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
@@ -113,11 +94,7 @@ export class CricketChannelsProvider implements SportsProvider {
         const fcChannelId = 'ch-npl-live';
         items.push({
             match: channel(fcChannelId, 'NPL Live Stream', this.name),
-            sources: [
-                this.source(fcChannelId, cleanSources.NPL11, 'NPL Live (NPL11)', 1),
-                this.source(fcChannelId, cleanSources.FC, 'FanCode Live (FC)', 2),
-                this.source(fcChannelId, cleanSources.FC3, 'FanCode 3 (FC3)', 3),
-            ],
+            sources: this.nplSourceList(fcChannelId, cleanSources),
         });
         items.push(...streamfree, ...npl);
         this.cache = { at: Date.now(), items };
@@ -141,11 +118,12 @@ export class CricketChannelsProvider implements SportsProvider {
         return items.filter((i) => i !== null);
     }
 
-    private async cleanNplSources(): Promise<{ NPL11: string; FC: string; FC3: string }> {
+    private async cleanNplSources(): Promise<{ NPL11: string; FC: string; FC3: string; nettv: string | null }> {
         const out = {
             NPL11: DIRECT_CLEAN_PLAYERS.NPL11,
             FC: DIRECT_CLEAN_PLAYERS.FC,
             FC3: DIRECT_CLEAN_PLAYERS.FC3,
+            nettv: null as string | null,
         };
         try {
             const linkHtml = await axios.get<string>('https://yonotv.pages.dev/LINK', { timeout: 3_500, responseType: 'text' })
@@ -155,6 +133,7 @@ export class CricketChannelsProvider implements SportsProvider {
                 if (table.has('NPL11')) out.NPL11 = table.get('NPL11')!;
                 if (table.has('FC')) out.FC = table.get('FC')!;
                 if (table.has('FC3')) out.FC3 = table.get('FC3')!;
+                out.nettv = linkHtml.match(NETTV_URL_RE)?.[0] ?? null;
             }
         } catch {
             // keep fallback defaults
@@ -163,58 +142,28 @@ export class CricketChannelsProvider implements SportsProvider {
         return out;
     }
 
-    /** One match per NPL game ESPN has in progress, carrying NetTV's live feeds. */
+    /** NetTV first (plain HLS, plays everywhere) then the DRM FanCode fallbacks. */
+    private nplSourceList(id: string, clean: { NPL11: string; FC: string; FC3: string; nettv: string | null }): MatchSource[] {
+        const candidates = [
+            clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
+            { url: clean.NPL11, label: 'NPL Live (NPL11)' },
+            { url: clean.FC, label: 'FanCode Live (FC)' },
+            { url: clean.FC3, label: 'FanCode 3 (FC3)' },
+        ].filter((c): c is { url: string; label: string } => !!c);
+        return candidates.map((c, i) => this.source(id, c.url, c.label, i + 1));
+    }
+
+    /** One match per NPL game ESPN has in progress, carrying NetTV's live feed + DRM fallbacks. */
     private async liveNpl(): Promise<Array<{ match: Match; sources: MatchSource[] }>> {
         const events = await getHeaderEvents('cricket').catch(() => []);
         const live = events.filter((e) => e.state === 'in' && e.competitors.length === 2 && /\(NPL\)/.test(e.competitors[0].name));
         if (!live.length) return [];
-        // NetTV numbers feeds per match; probe with maxRedirects: 0 so we don't follow to dead edges.
-        // NetTV's load balancer redirects non-Nepal IPs (302) while serving Nepali viewers.
-        const probes = await Promise.all([1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
-            axios.head(nplUrl(n), { timeout: 5_000, maxRedirects: 0, validateStatus: (s) => s !== 404 && s < 500 })
-                .then(() => n)
-                .catch(() => null)));
-        // No early return on an empty probe: FC/NPL11/FC3 below don't depend on
-        // NetTV at all, so a dead NetTV must not take down the whole match entry
-        // (it did — that's what made ESPN's live-score card unclickable).
-        let feeds = probes.filter((n): n is number => n !== null);
-
-        // The load balancer 302s every slot number whether or not it's actually
-        // streaming, so that alone (what the probe above checked) never rules
-        // anything out. Follow the redirect and look at the real response: a
-        // 404 definitively means nothing's there; any other error (timeout,
-        // 5xx, DNS) is ambiguous, so keep the slot rather than hide it.
-        const fresh = await Promise.all(feeds.map((n) =>
-            axios.get<string>(nplUrl(n), { timeout: 5_000, responseType: 'text' })
-                .then((r) => (isFreshNplFeed(r.data) ? n : null))
-                .catch((err) => (axios.isAxiosError(err) && err.response?.status === 404 ? null : n))));
-        feeds = fresh.filter((n): n is number => n !== null);
 
         const cleanSources = await this.cleanNplSources();
-
-        let activeMatchNum: number | null = null;
-        try {
-            const linkHtml = await axios.get<string>('https://yonotv.pages.dev/LINK', { timeout: 4_000, responseType: 'text' })
-                .then((r) => r.data).catch(() => '');
-            const m = linkHtml.match(/live_match(\d+)/);
-            if (m) activeMatchNum = parseInt(m[1], 10);
-        } catch {
-            // ignore
-        }
-        const orderedFeeds = activeMatchNum && feeds.includes(activeMatchNum)
-            ? [activeMatchNum, ...feeds.filter((n) => n !== activeMatchNum)]
-            : feeds;
 
         return live.map((e) => {
             const [home, away] = e.competitors.map((c) => cleanTeam(c.name));
             const id = `npl-nettv-${e.id}`;
-            const fcSources = [
-                this.source(id, cleanSources.NPL11, 'NPL Live (NPL11)', 1),
-                this.source(id, cleanSources.FC, 'FanCode Live (FC)', 2),
-                this.source(id, cleanSources.FC3, 'FanCode 3 (FC3)', 3),
-            ];
-            const nettvSources = orderedFeeds.flatMap((n) => NPL_EDGES.map((edge) => ({ url: nplUrl(n, edge.host), label: `${edge.label} ${n}` })))
-                .map((s, i) => this.source(id, s.url, s.label, fcSources.length + i + 1));
             return {
                 match: {
                     id,
@@ -226,7 +175,7 @@ export class CricketChannelsProvider implements SportsProvider {
                     provider: this.name,
                     league: NPL_ESPN_LEAGUE,
                 },
-                sources: [...fcSources, ...nettvSources],
+                sources: this.nplSourceList(id, cleanSources),
             };
         });
     }
