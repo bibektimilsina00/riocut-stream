@@ -111,12 +111,10 @@ export default function EmbedMatchPlayer({
     const dash = dashOf(activeSrc);
     const activeKey = active ? sourceKeyOf(active) : '';
 
-    // ponytail: temporary stopgap for NPL — every scraped source (NetTV token,
-    // FanCode's shared channel) is dead right now, so skip the failover dance
-    // and show the banner by default instead of waiting for each to fail.
-    // Revert: flip this to false once NPL's sources work again — none of the
-    // player/failover code below was touched, just this switch.
-    const NPL_FORCE_BANNER = true;
+    // ponytail: temporary stopgap for NPL — flip true again if every scraped
+    // source (NetTV token, FanCode's shared channel) goes dead at once; none
+    // of the player/failover code below needs touching, just this switch.
+    const NPL_FORCE_BANNER = false;
     const isNpl = /npl/i.test(effectiveMatchKey);
     const allExhausted = visible.length > 0 && visible.every((s) => failed.has(sourceKeyOf(s)));
     const showNplFallback = isNpl && (NPL_FORCE_BANNER || allExhausted);

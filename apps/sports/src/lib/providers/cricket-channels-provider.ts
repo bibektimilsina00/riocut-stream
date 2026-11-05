@@ -39,6 +39,11 @@ const NPL_ESPN_LEAGUE = 'Nepal Premier League';
 // the token (confirmed: following it 403s) — so we match the tokened URL
 // directly instead of trusting that table entry.
 const NETTV_URL_RE = /https:\/\/ott-nettv-\d+\.nettv\.com\.np\/iptvlivestream\/[^"'\s]+wmsAuthSign=[^"'\s&]+/;
+// npl-tv.pages.dev's own per-match link list — "link5" is a plain public
+// Rumble CDN HLS stream (no DRM, no token, no bot-check), unlike their
+// link1-3 (same DRM'd aiv-cdn manifests as our FC/FC3) or link7 (finalspot,
+// Referer-gated).
+const NPL_TV_DATA_URL = 'https://npl-tv.pages.dev/data.json';
 
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
@@ -118,43 +123,47 @@ export class CricketChannelsProvider implements SportsProvider {
         return items.filter((i) => i !== null);
     }
 
-    private async cleanNplSources(): Promise<{ FC: string; FC3: string; nettv: string | null; np2: string | null }> {
+    private async cleanNplSources(): Promise<{ FC: string; FC3: string; nettv: string | null; np2: string | null; rumble: string | null }> {
         const out = {
             FC: DIRECT_CLEAN_PLAYERS.FC,
             FC3: DIRECT_CLEAN_PLAYERS.FC3,
             nettv: null as string | null,
             np2: null as string | null,
+            rumble: null as string | null,
         };
-        try {
-            const linkHtml = await axios.get<string>('https://yonotv.pages.dev/LINK', { timeout: 3_500, responseType: 'text' })
-                .then((r) => r.data).catch(() => '');
-            if (linkHtml) {
-                const table = parseChannelTable(linkHtml);
-                // Deliberately not reading a "NPL11" entry: Yono dropped it from
-                // this table, and its old hardcoded fallback resolves (via a live
-                // page scrape — its own extra failure mode) to the exact same
-                // manifest/key as FC, so it was a pure, more-fragile duplicate.
-                if (table.has('FC')) out.FC = table.get('FC')!;
-                if (table.has('FC3')) out.FC3 = table.get('FC3')!;
-                out.nettv = linkHtml.match(NETTV_URL_RE)?.[0] ?? null;
-                // FC/FC3 are FanCode's generic live-cricket channel, not an NPL
-                // feed — whatever FanCode happens to be airing (Ranji Trophy,
-                // domestic T20s...) when another match overlaps NPL's slot. NP2
-                // is Yono's own Nepal-tagged source, a distinct stream.
-                const np2 = table.get('NP2');
-                out.np2 = np2 ? playableFrom(np2)?.url ?? null : null;
-            }
-        } catch {
-            // keep fallback defaults
+        const [linkHtml, nplTvData] = await Promise.all([
+            axios.get<string>('https://yonotv.pages.dev/LINK', { timeout: 3_500, responseType: 'text' })
+                .then((r) => r.data).catch(() => ''),
+            axios.get<Record<string, { link5?: { type?: string; url?: string } }>>(NPL_TV_DATA_URL, { timeout: 3_500 })
+                .then((r) => r.data).catch(() => null),
+        ]);
+        if (linkHtml) {
+            const table = parseChannelTable(linkHtml);
+            // Deliberately not reading a "NPL11" entry: Yono dropped it from
+            // this table, and its old hardcoded fallback resolves (via a live
+            // page scrape — its own extra failure mode) to the exact same
+            // manifest/key as FC, so it was a pure, more-fragile duplicate.
+            if (table.has('FC')) out.FC = table.get('FC')!;
+            if (table.has('FC3')) out.FC3 = table.get('FC3')!;
+            out.nettv = linkHtml.match(NETTV_URL_RE)?.[0] ?? null;
+            // FC/FC3 are FanCode's generic live-cricket channel, not an NPL
+            // feed — whatever FanCode happens to be airing (Ranji Trophy,
+            // domestic T20s...) when another match overlaps NPL's slot. NP2
+            // is Yono's own Nepal-tagged source, a distinct stream.
+            const np2 = table.get('NP2');
+            out.np2 = np2 ? playableFrom(np2)?.url ?? null : null;
         }
+        const link5 = nplTvData?.npl2026?.link5;
+        if (link5?.type === 'hls' && link5.url) out.rumble = link5.url;
         [out.FC, out.FC3] = await Promise.all([out.FC, out.FC3].map(unwrapPlayerPage));
         return out;
     }
 
-    /** NetTV and NP2 are NPL-specific; FC/FC3 are FanCode's generic cricket channel (may show a different match). */
-    private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null; np2: string | null }): MatchSource[] {
+    /** NetTV, NP2 and Rumble are NPL-specific; FC/FC3 are FanCode's generic cricket channel (may show a different match). */
+    private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null; np2: string | null; rumble: string | null }): MatchSource[] {
         const candidates = [
             clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
+            clean.rumble && { url: clean.rumble, label: 'NPL Live' },
             clean.np2 && { url: clean.np2, label: 'Nepal Live (NP2)' },
             { url: clean.FC, label: 'FanCode Live (FC)' },
             { url: clean.FC3, label: 'FanCode 3 (FC3)' },
