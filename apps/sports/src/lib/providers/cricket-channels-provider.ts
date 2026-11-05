@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Match, MatchDetail, MatchSource, SportCategory } from '../sportsrc';
 import { SportsProvider } from './base';
 import { getHeaderEvents } from '../espn';
-import { DIRECT_CLEAN_PLAYERS, parseChannelTable, unwrapPlayerPage } from './yono-provider';
+import { DIRECT_CLEAN_PLAYERS, parseChannelTable, playableFrom, unwrapPlayerPage } from './yono-provider';
 
 /**
  * Cricket sources that aren't a per-match feed, so cricket never hangs on one
@@ -118,11 +118,12 @@ export class CricketChannelsProvider implements SportsProvider {
         return items.filter((i) => i !== null);
     }
 
-    private async cleanNplSources(): Promise<{ FC: string; FC3: string; nettv: string | null }> {
+    private async cleanNplSources(): Promise<{ FC: string; FC3: string; nettv: string | null; np2: string | null }> {
         const out = {
             FC: DIRECT_CLEAN_PLAYERS.FC,
             FC3: DIRECT_CLEAN_PLAYERS.FC3,
             nettv: null as string | null,
+            np2: null as string | null,
         };
         try {
             const linkHtml = await axios.get<string>('https://yonotv.pages.dev/LINK', { timeout: 3_500, responseType: 'text' })
@@ -136,6 +137,12 @@ export class CricketChannelsProvider implements SportsProvider {
                 if (table.has('FC')) out.FC = table.get('FC')!;
                 if (table.has('FC3')) out.FC3 = table.get('FC3')!;
                 out.nettv = linkHtml.match(NETTV_URL_RE)?.[0] ?? null;
+                // FC/FC3 are FanCode's generic live-cricket channel, not an NPL
+                // feed — whatever FanCode happens to be airing (Ranji Trophy,
+                // domestic T20s...) when another match overlaps NPL's slot. NP2
+                // is Yono's own Nepal-tagged source, a distinct stream.
+                const np2 = table.get('NP2');
+                out.np2 = np2 ? playableFrom(np2)?.url ?? null : null;
             }
         } catch {
             // keep fallback defaults
@@ -144,10 +151,11 @@ export class CricketChannelsProvider implements SportsProvider {
         return out;
     }
 
-    /** NetTV first (plain HLS, plays everywhere) then the DRM FanCode fallbacks. */
-    private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null }): MatchSource[] {
+    /** NetTV and NP2 are NPL-specific; FC/FC3 are FanCode's generic cricket channel (may show a different match). */
+    private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null; np2: string | null }): MatchSource[] {
         const candidates = [
             clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
+            clean.np2 && { url: clean.np2, label: 'Nepal Live (NP2)' },
             { url: clean.FC, label: 'FanCode Live (FC)' },
             { url: clean.FC3, label: 'FanCode 3 (FC3)' },
         ].filter((c): c is { url: string; label: string } => !!c);
