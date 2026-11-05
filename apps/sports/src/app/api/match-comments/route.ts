@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { listMatchComments } from '@riocut/services';
+import { listMatchComments, /* createMatchComment, moderateChatMessage, clientIp, */ type CommentAuthor } from '@riocut/services';
+// import { emitComment } from '@riocut/realtime/commentBus';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,24 @@ type Session = { user?: { id?: string; name?: string | null; role?: string } } |
 function isAdmin(session: Session): boolean {
     const role = session?.user?.role;
     return role === 'admin' || role === 'moderator';
+}
+
+/**
+ * Build an author identity. Members post under their account name; everyone
+ * else posts as "Anonymous" (a per-device guest id is still used behind the
+ * scenes so a guest can react once and delete their own comments).
+ */
+// ponytail: unused while POST is disabled below — kept for when chat reopens.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function authorFrom(session: Session, guestId?: string | null): CommentAuthor | null {
+    if (session?.user?.id) {
+        return { authorKey: session.user.id, authorName: session.user.name ?? 'Member', isGuest: false, userId: session.user.id };
+    }
+    const gid = (guestId ?? '').trim();
+    if (gid) {
+        return { authorKey: `guest:${gid}`, authorName: 'Anonymous', isGuest: true, userId: null };
+    }
+    return null;
 }
 
 /** Viewer identity key used only to mark "your" reactions / deletable comments. */
@@ -30,7 +49,32 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/match-comments — create a comment (member or anonymous guest). */
-// ponytail: chat temporarily disabled; restore the previous POST body (git log) to reopen.
-export async function POST() {
+// ponytail: chat temporarily disabled by request — uncomment the body below and
+// delete the early return to reopen.
+export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Live chat is temporarily disabled' }, { status: 503 });
+    /*
+    const session = (await auth()) as Session;
+    let body: { matchKey?: string; content?: string; parentId?: string | null; guestId?: string };
+    try {
+        body = await req.json();
+    } catch {
+        return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+    }
+    const author = authorFrom(session, body.guestId);
+    if (!author) return NextResponse.json({ error: 'Missing identity' }, { status: 401 });
+    if (!body.matchKey || !body.content?.trim()) return NextResponse.json({ error: 'Missing matchKey or content' }, { status: 400 });
+
+    // Anyone can post anonymously: rate-limit by identity + IP, block links, mask abuse.
+    const mod = moderateChatMessage(author.authorKey, clientIp((h) => req.headers.get(h)), body.content);
+    if (!mod.ok) return NextResponse.json({ error: mod.error }, { status: 429 });
+
+    try {
+        const comment = await createMatchComment(author, { matchKey: body.matchKey, content: mod.text, parentId: body.parentId ?? null });
+        emitComment(body.matchKey, 'comment:new', comment);
+        return NextResponse.json({ comment }, { status: 201 });
+    } catch (err) {
+        return NextResponse.json({ error: err instanceof Error ? err.message : 'Failed' }, { status: 400 });
+    }
+    */
 }
