@@ -187,9 +187,7 @@ export default function EmbedMatchPlayer({
             <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-gray-800">
                 {showNplFallback ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center bg-gray-900">
-                        <AlertTriangle className="h-6 w-6 text-yellow-400" />
-                        <p className="text-sm text-gray-300">Streams for this match aren&apos;t working right now.</p>
-                        <p className="text-xs text-gray-500">Check FanCode or NPL&apos;s official broadcast partner for this match.</p>
+                        <p className="text-sm text-gray-300">Watch this match through NPL&apos;s official broadcast.</p>
                     </div>
                 ) : dash && !clearKey ? (
                     <div className="absolute inset-0 bg-black" />
