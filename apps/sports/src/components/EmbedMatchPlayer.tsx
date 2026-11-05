@@ -242,6 +242,12 @@ export default function EmbedMatchPlayer({
                 )}
             </div>
 
+            {isNpl && !showNplFallback && (
+                <p className="text-xs text-gray-500 text-center">
+                    For the best experience, watch this match through NPL&apos;s official broadcast.
+                </p>
+            )}
+
             {/* Header — Try next + counter */}
             <div className="flex flex-wrap items-center gap-2">
                 {visible.length > 1 && (
