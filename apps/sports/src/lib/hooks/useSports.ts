@@ -31,6 +31,10 @@ export function useMatchesByCategory(category: string | undefined) {
         queryKey: sportsKeys.matches(category ?? ''),
         queryFn: () => sportsrc.getMatches(category!),
         staleTime: 60_000,
+        // Competitions-on-now polls ESPN every 60s (useScoreboards) to light up
+        // a match as live; without matching this, a tab left open never re-fetches
+        // our own matches list, so the card's score updates but stays unclickable.
+        refetchInterval: 60_000,
         enabled: !!category,
     });
 }
