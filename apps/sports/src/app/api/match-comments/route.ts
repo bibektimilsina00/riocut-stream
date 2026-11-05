@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { listMatchComments, /* createMatchComment, moderateChatMessage, clientIp, */ type CommentAuthor } from '@riocut/services';
-// import { emitComment } from '@riocut/realtime/commentBus';
+import { listMatchComments, createMatchComment, moderateChatMessage, clientIp, type CommentAuthor } from '@riocut/services';
+import { emitComment } from '@riocut/realtime/commentBus';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,8 +18,6 @@ function isAdmin(session: Session): boolean {
  * else posts as "Anonymous" (a per-device guest id is still used behind the
  * scenes so a guest can react once and delete their own comments).
  */
-// ponytail: unused while POST is disabled below — kept for when chat reopens.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function authorFrom(session: Session, guestId?: string | null): CommentAuthor | null {
     if (session?.user?.id) {
         return { authorKey: session.user.id, authorName: session.user.name ?? 'Member', isGuest: false, userId: session.user.id };
@@ -49,11 +47,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/match-comments — create a comment (member or anonymous guest). */
-// ponytail: chat temporarily disabled by request — uncomment the body below and
-// delete the early return to reopen.
 export async function POST(req: NextRequest) {
-    return NextResponse.json({ error: 'Live chat is temporarily disabled' }, { status: 503 });
-    /*
     const session = (await auth()) as Session;
     let body: { matchKey?: string; content?: string; parentId?: string | null; guestId?: string };
     try {
@@ -76,5 +70,4 @@ export async function POST(req: NextRequest) {
     } catch (err) {
         return NextResponse.json({ error: err instanceof Error ? err.message : 'Failed' }, { status: 400 });
     }
-    */
 }
