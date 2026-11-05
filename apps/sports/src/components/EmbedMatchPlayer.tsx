@@ -111,6 +111,14 @@ export default function EmbedMatchPlayer({
     const dash = dashOf(activeSrc);
     const activeKey = active ? sourceKeyOf(active) : '';
 
+    // ponytail: temporary stopgap for NPL — its scraped sources (NetTV token,
+    // FanCode's shared channel) are unreliable right now. Once every source
+    // has auto-failed, show a plain banner instead of a dead player. Remove
+    // once NPL's sources are solid again; "Try next" below still retries them.
+    const isNpl = /npl/i.test(effectiveMatchKey);
+    const allExhausted = visible.length > 0 && visible.every((s) => failed.has(sourceKeyOf(s)));
+    const showNplFallback = isNpl && allExhausted;
+
     const advance = useCallback((opts: { report: 'auto-failed' | 'stall' | null }) => {
         const nextFailed = new Set(failed).add(activeKey);
         setFailed(nextFailed);
@@ -175,7 +183,13 @@ export default function EmbedMatchPlayer({
     return (
         <div className="space-y-3">
             <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-gray-800">
-                {dash && !clearKey ? (
+                {showNplFallback ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center bg-gray-900">
+                        <AlertTriangle className="h-6 w-6 text-yellow-400" />
+                        <p className="text-sm text-gray-300">Streams for this match aren&apos;t working right now.</p>
+                        <p className="text-xs text-gray-500">Check FanCode or NPL&apos;s official broadcast partner for this match.</p>
+                    </div>
+                ) : dash && !clearKey ? (
                     <div className="absolute inset-0 bg-black" />
                 ) : dash ? (
                     <DashVideo
