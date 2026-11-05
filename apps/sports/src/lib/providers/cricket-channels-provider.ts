@@ -154,10 +154,16 @@ export class CricketChannelsProvider implements SportsProvider {
         return candidates.map((c, i) => this.source(id, c.url, c.label, i + 1));
     }
 
-    /** One match per NPL game ESPN has in progress, carrying NetTV's live feed + DRM fallbacks. */
+    /** Streams open this long before toss: broadcasters run pre-match coverage, so other NPL sites already show "live" by then. */
+    private static readonly PRE_MATCH_MS = 30 * 60_000;
+
+    /** One match per NPL game that's in progress or about to toss, carrying NetTV's live feed + DRM fallbacks. */
     private async liveNpl(): Promise<Array<{ match: Match; sources: MatchSource[] }>> {
         const events = await getHeaderEvents('cricket').catch(() => []);
-        const live = events.filter((e) => e.state === 'in' && e.competitors.length === 2 && /\(NPL\)/.test(e.competitors[0].name));
+        const now = Date.now();
+        const live = events.filter((e) =>
+            e.competitors.length === 2 && /\(NPL\)/.test(e.competitors[0].name) &&
+            (e.state === 'in' || (e.state === 'pre' && e.date - now <= CricketChannelsProvider.PRE_MATCH_MS)));
         if (!live.length) return [];
 
         const cleanSources = await this.cleanNplSources();
