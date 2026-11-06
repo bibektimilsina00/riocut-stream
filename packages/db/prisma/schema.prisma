@@ -333,6 +333,20 @@ model SportsSourceReport {
   @@index([createdAt])
 }
 
+// One row per (match, browser tab), upserted on each ~20s heartbeat from the
+// player page. DB-backed (not in-memory) so the admin app's "Live Now"
+// dashboard — a separate process/container from the sports app — can read
+// it, and so counts stay correct if sports ever runs more than one replica.
+model LiveViewer {
+  matchKey  String
+  sourceKey String // which stream this viewer is currently on
+  cid       String // per-tab id, regenerated each page load
+  lastSeen  DateTime @updatedAt
+
+  @@id([matchKey, cid])
+  @@index([matchKey, lastSeen])
+}
+
 // ============================================
 // BLOG MODELS (Used by Admin App)
 // ============================================

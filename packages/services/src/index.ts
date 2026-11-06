@@ -11,3 +11,4 @@ export * from './iptvFavorites.service';
 export * from './tmdbKey.service';
 export * from './matchComment.service';
 export * from './chatModeration';
+export * from './livePresence.service';

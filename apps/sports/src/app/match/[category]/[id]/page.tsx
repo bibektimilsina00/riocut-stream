@@ -11,6 +11,7 @@ import PlayerNotice from '@/components/PlayerNotice';
 import MatchCenter from '@/components/matchcenter/MatchCenter';
 import CommentSection from '@/components/CommentSection';
 import LiveBadge from '@/components/LiveBadge';
+import AdminViewerCount from '@/components/AdminViewerCount';
 import { Button } from '@riocut/ui/components/ui/button';
 import { Users, CalendarClock, ArrowLeft } from 'lucide-react';
 
@@ -63,6 +64,7 @@ export default function MatchDetailPage({ params }: { params: Promise<{ category
                             <div className="flex items-center gap-2">
                                 <p className="text-xs uppercase tracking-wider text-gray-500">{detail.league ? `${sportMeta(cat).label} · ${detail.league}` : sportMeta(cat).label}</p>
                                 {live ? <LiveBadge /> : null}
+                                <AdminViewerCount matchKey={`${cat}:${detail.id}`} />
                             </div>
                             <h1 className="text-2xl font-bold text-white flex items-center gap-3 flex-wrap">
                                 {home?.badge ? (
