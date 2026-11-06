@@ -162,8 +162,11 @@ export class CricketChannelsProvider implements SportsProvider {
     /** NetTV, NP2 and Rumble are NPL-specific; FC/FC3 are FanCode's generic cricket channel (may show a different match). */
     private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null; np2: string | null; rumble: string | null }): MatchSource[] {
         const candidates = [
-            clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
+            // Rumble first: the only one of these that's actually reliable right
+            // now (NetTV/NP2 dead, FC/FC3 carry whatever FanCode is airing, not
+            // necessarily NPL) — listed as fallbacks for when that changes.
             clean.rumble && { url: clean.rumble, label: 'NPL Live' },
+            clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
             clean.np2 && { url: clean.np2, label: 'Nepal Live (NP2)' },
             { url: clean.FC, label: 'FanCode Live (FC)' },
             { url: clean.FC3, label: 'FanCode 3 (FC3)' },

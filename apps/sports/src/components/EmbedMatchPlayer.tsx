@@ -111,13 +111,15 @@ export default function EmbedMatchPlayer({
     const dash = dashOf(activeSrc);
     const activeKey = active ? sourceKeyOf(active) : '';
 
-    // ponytail: temporary stopgap for NPL — flip true again if every scraped
-    // source (NetTV token, FanCode's shared channel) goes dead at once; none
-    // of the player/failover code below needs touching, just this switch.
-    const NPL_FORCE_BANNER = false;
+    // ponytail: temporary stopgap for NPL — NetTV/NP2/FC/FC3 are confirmed
+    // dead or showing the wrong match right now, only the Rumble source
+    // ("NPL Live") actually works. Show the official-broadcast banner for
+    // the other four instead of letting them load; drop this check once
+    // they're reliable again (none of the player/failover code was touched).
     const isNpl = /npl/i.test(effectiveMatchKey);
+    const isKnownBadNplSource = isNpl && !!active && active.source !== 'NPL Live';
     const allExhausted = visible.length > 0 && visible.every((s) => failed.has(sourceKeyOf(s)));
-    const showNplFallback = isNpl && (NPL_FORCE_BANNER || allExhausted);
+    const showNplFallback = isNpl && (isKnownBadNplSource || allExhausted);
 
     const advance = useCallback((opts: { report: 'auto-failed' | 'stall' | null }) => {
         const nextFailed = new Set(failed).add(activeKey);
