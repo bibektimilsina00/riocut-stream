@@ -111,16 +111,16 @@ export default function EmbedMatchPlayer({
     const dash = dashOf(activeSrc);
     const activeKey = active ? sourceKeyOf(active) : '';
 
-    // ponytail: FC/FC3 (FanCode's DASH+ClearKey manifest) confirmed to
-    // actually carry the NPL feed as of 2026-11-09 — verified against a
-    // third-party site using the identical manifest+key as its own working
-    // "Server 2" — so they're allowed to play. NetTV/NP2 are still showing
-    // stale/dead tokens, so the official-broadcast banner stays up for
-    // those specifically; drop this list once they're reliable again.
+    // ponytail: every known NPL source is currently broken or wrong —
+    // verified 2026-11-09 by decrypting actual video frames: FC and FC3
+    // (FanCode's leaked-ClearKey manifests) show FanCode's own "match has
+    // ended" placeholder, a third manifest shows an unrelated football
+    // match, Rumble is dead upstream, NetTV's token is stale, NP2 shows
+    // offline. No source is reliable enough to let play; banner stays up
+    // for every NPL match until one actually is. Drop this override once a
+    // real source is confirmed working again.
     const isNpl = /npl/i.test(effectiveMatchKey);
-    const isKnownBadNplSource = isNpl && !!active && (active.source === 'NetTV Live' || active.source === 'Nepal Live (NP2)');
-    const allExhausted = visible.length > 0 && visible.every((s) => failed.has(sourceKeyOf(s)));
-    const showNplFallback = isNpl && (isKnownBadNplSource || allExhausted);
+    const showNplFallback = isNpl;
 
     const advance = useCallback((opts: { report: 'auto-failed' | 'stall' | null }) => {
         const nextFailed = new Set(failed).add(activeKey);
