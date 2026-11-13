@@ -8,12 +8,16 @@ import { Star, Calendar, Clock, Loader2, Info, Server, Globe, Film, Users } from
 import Navigation from '@/components/Navigation';
 import { MediaCard } from '@/components/media-card';
 import Image from 'next/image';
+import { titleLanguages, langName } from '@/lib/languages';
+import AudioLanguagePicker from '@/components/AudioLanguagePicker';
+import { useProviderRanking } from '@/lib/hooks/useProviderRanking';
 import { PageLoader } from '@riocut/ui/components/ui/loading-spinner';
 
 interface VideoProvider {
   id: string;
   name: string;
   slug: string;
+  languages?: string[];
   quality: string;
   isDefault: boolean;
   movieTemplate: string;
@@ -28,7 +32,7 @@ export default function WatchMoviePage() {
 
   const { data: movie, isLoading } = useMovieDetails(movieId);
   const {
-    data: providers = [],
+    data: rawProviders = [],
     isLoading: providersLoading,
   } = useQuery<VideoProvider[]>({
     queryKey: ['video-providers'],
@@ -45,12 +49,13 @@ export default function WatchMoviePage() {
   const [showAllServers, setShowAllServers] = useState(false);
   const [isPlayerLoading, setIsPlayerLoading] = useState(true);
 
-  // Pick the default provider once on load.
-  useEffect(() => {
-    if (providers.length === 0) return;
-    const defaultIndex = providers.findIndex((p) => p.isDefault);
-    setCurrentSourceIndex(defaultIndex >= 0 ? defaultIndex : 0);
-  }, [providers]);
+  // Best server for THIS title first (crowd-ranked; admin order breaks ties).
+  const [audioLang, setAudioLang] = useState<string | null>(null);
+  const langs = useMemo(() => (movie ? titleLanguages(movie) : []), [movie]);
+  const lang = audioLang ?? langs[0];
+  const { ranked: providers, flagOf } = useProviderRanking(
+    rawProviders, 'movie', movieId, currentSourceIndex, !isPlayerLoading, lang,
+  );
 
   // Get similar movies from movie details
   const similarMovies = movie?.similar?.results || [];
@@ -71,7 +76,7 @@ export default function WatchMoviePage() {
   }
 
   // No providers available
-  if (!providersLoading && providers.length === 0) {
+  if (!providersLoading && rawProviders.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
         <Navigation />
@@ -155,6 +160,12 @@ export default function WatchMoviePage() {
                 </span>
               </div>
 
+              <AudioLanguagePicker
+                langs={langs}
+                value={lang}
+                onChange={(c) => { setAudioLang(c); setCurrentSourceIndex(0); setIsPlayerLoading(true); }}
+              />
+
               {/* Server Buttons */}
               <div className="flex flex-wrap gap-2">
                 {visibleServers.map((provider, index) => {
@@ -173,6 +184,18 @@ export default function WatchMoviePage() {
                     >
                       <Server className="w-3.5 h-3.5" />
                       <span>{provider.name}</span>
+                      {!!provider.languages?.length && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 leading-none">{provider.languages.map(langName).join('/')}</span>
+                      )}
+                      {flagOf(provider.slug) === 'title-best' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 leading-none">Best for this title</span>
+                      )}
+                      {flagOf(provider.slug) === 'reliable' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 leading-none">Reliable</span>
+                      )}
+                      {flagOf(provider.slug) === 'unreliable' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 leading-none">Unreliable</span>
+                      )}
                       {isActive && (
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
                       )}
@@ -298,13 +321,13 @@ export default function WatchMoviePage() {
                     </div>
                   )}
 
-                  {movie.spoken_languages && movie.spoken_languages.length > 0 && (
+                  {langs.length > 0 && (
                     <div className="flex items-start gap-3 p-3 bg-gray-800/40 rounded-lg min-w-[200px]">
                       <Globe className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Language</p>
                         <p className="text-gray-200 text-sm font-medium">
-                          {movie.spoken_languages[0].english_name}
+                          {langs.map(langName).join(', ')}
                         </p>
                       </div>
                     </div>

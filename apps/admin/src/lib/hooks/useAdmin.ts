@@ -32,6 +32,7 @@ export interface ContentSource {
     tvTemplate: string;
     quality: string;
     description?: string | null;
+    languages?: string[];
     logoUrl?: string | null;
     homepage?: string | null;
     isEnabled: boolean;

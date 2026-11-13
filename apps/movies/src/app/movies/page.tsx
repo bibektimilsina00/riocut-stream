@@ -7,6 +7,7 @@ import MediaCard from '@/components/catalog/MediaCard';
 import { Button } from '@riocut/ui/components/ui/button';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import LanguageFilter from '@/components/LanguageFilter';
 import {
     useTrending,
     usePopular,
@@ -21,32 +22,35 @@ import { useInfiniteScroll } from '@riocut/ui/hooks/useInfiniteScroll';
 export default function MoviesPage() {
     const [filter, setFilter] = useState<'popular' | 'top_rated' | 'trending'>('popular');
     const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [allMovies, setAllMovies] = useState<MediaItem[]>([]);
+
+    const discoverMode = !!selectedGenre || !!selectedLanguage;
 
     // Fetch genres
     const { data: genres = [], isLoading: genresLoading } = useGenres('movie');
 
     // Fetch movies based on current filter and genre
     const trendingQuery = useTrending('movie', 'week', {
-        enabled: filter === 'trending' && !selectedGenre,
+        enabled: filter === 'trending' && !discoverMode,
     });
 
     const popularQuery = usePopular('movie', page, {
-        enabled: filter === 'popular' && !selectedGenre,
+        enabled: filter === 'popular' && !discoverMode,
     });
 
     const topRatedQuery = useTopRated('movie', page, {
-        enabled: filter === 'top_rated' && !selectedGenre,
+        enabled: filter === 'top_rated' && !discoverMode,
     });
 
-    const discoverQuery = useDiscoverByGenre('movie', selectedGenre!, page, {
-        enabled: !!selectedGenre,
+    const discoverQuery = useDiscoverByGenre('movie', selectedGenre, page, selectedLanguage, {
+        enabled: discoverMode,
     });
 
     // Determine which query to use
-    const activeQuery = selectedGenre
+    const activeQuery = discoverMode
         ? discoverQuery
         : filter === 'trending'
             ? trendingQuery
@@ -72,12 +76,12 @@ export default function MoviesPage() {
     const movies = useMemo(() => {
         if (!data) return [];
 
-        if (filter === 'trending' && !selectedGenre) {
+        if (filter === 'trending' && !discoverMode) {
             return Array.isArray(data) ? data : [];
         }
 
         return Array.isArray(data) ? data : (data.results || []);
-    }, [data, filter, selectedGenre]);
+    }, [data, filter, discoverMode]);
 
     // Accumulate movies for infinite scroll on small screens
     useEffect(() => {
@@ -144,7 +148,7 @@ export default function MoviesPage() {
         }
     }
 
-    const isTrendingDisabled = !!selectedGenre;
+    const isTrendingDisabled = discoverMode;
 
     return (
         <div className="min-h-screen bg-gray-950 page-transition">
@@ -180,6 +184,15 @@ export default function MoviesPage() {
                                 <span className="hidden sm:inline">{label}</span>
                             </button>
                         ))}
+                    </div>
+
+                    {/* Language Filter Scroll Row */}
+                    <div className="pt-3">
+                        <LanguageFilter
+                            value={selectedLanguage}
+                            disabled={isLoading}
+                            onChange={(c) => { setSelectedLanguage(c); setPage(1); setAllMovies([]); if (filter === 'trending' && c) setFilter('popular'); }}
+                        />
                     </div>
 
                     {/* Genre Filter Scroll Row */}

@@ -39,6 +39,7 @@ interface ProviderFormData {
     isEnabled: boolean;
     isDefault: boolean;
     description?: string;
+    languages?: string;
     logoUrl?: string;
     homepage?: string;
     supportsImdb: boolean;
@@ -47,6 +48,8 @@ interface ProviderFormData {
     hasSubtitles: boolean;
     hasAutoplay: boolean;
 }
+
+const parseLangs = (s?: string) => (s ?? '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
 
 // Sortable Card Component
 function SortableSourceCard({
@@ -220,6 +223,7 @@ export default function ContentPage() {
         isEnabled: true,
         isDefault: false,
         description: '',
+        languages: '',
         logoUrl: '',
         homepage: '',
         supportsImdb: false,
@@ -330,7 +334,7 @@ export default function ContentPage() {
             const response = await fetch('/api/admin/content/sources', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, order: orderedSources.length }),
+                body: JSON.stringify({ ...formData, languages: parseLangs(formData.languages), order: orderedSources.length }),
             });
 
             if (response.ok) {
@@ -350,7 +354,7 @@ export default function ContentPage() {
             const response = await fetch(`/api/admin/content/sources/${editingProvider.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...formData, languages: parseLangs(formData.languages) }),
             });
 
             if (response.ok) {
@@ -390,6 +394,7 @@ export default function ContentPage() {
             isEnabled: true,
             isDefault: false,
             description: '',
+            languages: '',
             logoUrl: '',
             homepage: '',
             supportsImdb: false,
@@ -416,6 +421,7 @@ export default function ContentPage() {
                 isEnabled: provider.isEnabled,
                 isDefault: provider.isDefault,
                 description: provider.description || '',
+                languages: (provider.languages || []).join(', '),
                 logoUrl: provider.logoUrl || '',
                 homepage: provider.homepage || '',
                 supportsImdb: provider.supportsImdb,
@@ -662,6 +668,18 @@ export default function ContentPage() {
                                         className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-teal-500"
                                         rows={2}
                                         placeholder="Brief description of the provider"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Audio languages
+                                    </label>
+                                    <input
+                                        value={formData.languages ?? ''}
+                                        onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
+                                        className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-teal-500"
+                                        placeholder="ISO codes, comma separated (e.g. hi, ta, te). Empty = unknown / multi-language"
                                     />
                                 </div>
 

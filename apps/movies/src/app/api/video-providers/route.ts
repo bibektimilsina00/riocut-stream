@@ -26,6 +26,7 @@ export async function GET() {
                 hasMultiQuality: true,
                 hasSubtitles: true,
                 hasAutoplay: true,
+                languages: true,
                 description: true,
                 logoUrl: true
             }

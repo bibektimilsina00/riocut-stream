@@ -392,14 +392,16 @@ export async function getSeasonDetails(
  */
 export async function discoverByGenre(
     mediaType: 'movie' | 'tv',
-    genreId: number,
-    page: number = 1
+    genreId: number | null,
+    page: number = 1,
+    language?: string | null
 ): Promise<TMDbResponse<MediaItem>> {
     const response: AxiosResponse<TMDbResponse<MediaItem>> = await tmdbAxios.get(
         `/discover/${mediaType}`,
         {
             params: {
-                with_genres: genreId,
+                ...(genreId ? { with_genres: genreId } : {}),
+                ...(language ? { with_original_language: language } : {}),
                 page,
                 sort_by: 'popularity.desc',
             },

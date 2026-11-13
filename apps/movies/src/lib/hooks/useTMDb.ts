@@ -227,16 +227,17 @@ export function useGenres(
  */
 export function useDiscoverByGenre(
   mediaType: 'movie' | 'tv',
-  genreId: number,
+  genreId: number | null,
   page: number = 1,
+  language?: string | null,
   options?: Omit<UseQueryOptions<TMDbResponse<MediaItem>>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery({
-    queryKey: tmdbKeys.discover(mediaType, genreId, page),
-    queryFn: () => discoverByGenre(mediaType, genreId, page),
+    queryKey: [...tmdbKeys.discover(mediaType, genreId ?? 0, page), language ?? ''],
+    queryFn: () => discoverByGenre(mediaType, genreId, page, language),
     staleTime: 1000 * 60 * 15, // 15 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
-    enabled: !!genreId,
+    enabled: !!genreId || !!language,
     placeholderData: (prev) => prev,
     ...options,
   });

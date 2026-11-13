@@ -266,6 +266,8 @@ model VideoProvider {
   // Provider-specific features
   hasMultiQuality Boolean @default(true)
   hasSubtitles    Boolean @default(true)
+  // ISO 639-1 audio languages this server is known for; empty = unknown/multi-language
+  languages       String[] @default([])
   hasAutoplay     Boolean @default(false)
   requiresAuth    Boolean @default(false)
 
@@ -498,4 +500,18 @@ model MatchCommentReaction {
   @@unique([commentId, authorKey, type])
   @@index([commentId])
   @@index([userId])
+}
+
+// Crowd signal for movie/TV embed providers: which server worked for which title.
+model VideoProviderReport {
+  id           String   @id @default(cuid())
+  providerSlug String
+  mediaType    String // 'movie' | 'tv'
+  tmdbId       Int
+  reason       String // 'ok' | 'bailed' | 'timeout'
+  country      String?
+  createdAt    DateTime @default(now())
+
+  @@index([mediaType, tmdbId, createdAt])
+  @@index([providerSlug, mediaType, createdAt])
 }

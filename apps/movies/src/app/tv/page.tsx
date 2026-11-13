@@ -7,6 +7,7 @@ import MediaCard from '@/components/catalog/MediaCard';
 import { Button } from '@riocut/ui/components/ui/button';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import LanguageFilter from '@/components/LanguageFilter';
 import {
     useTrending,
     usePopular,
@@ -21,20 +22,23 @@ import { useInfiniteScroll } from '@riocut/ui/hooks/useInfiniteScroll';
 export default function TVShowsPage() {
     const [filter, setFilter] = useState<'popular' | 'top_rated' | 'trending'>('popular');
     const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [allShows, setAllShows] = useState<MediaItem[]>([]);
+
+    const discoverMode = !!selectedGenre || !!selectedLanguage;
 
     // Fetch genres
     const { data: genres = [], isLoading: genresLoading } = useGenres('tv');
 
     // Fetch TV shows
-    const trendingQuery = useTrending('tv', 'week', { enabled: filter === 'trending' && !selectedGenre });
-    const popularQuery = usePopular('tv', page, { enabled: filter === 'popular' && !selectedGenre });
-    const topRatedQuery = useTopRated('tv', page, { enabled: filter === 'top_rated' && !selectedGenre });
-    const discoverQuery = useDiscoverByGenre('tv', selectedGenre!, page, { enabled: !!selectedGenre });
+    const trendingQuery = useTrending('tv', 'week', { enabled: filter === 'trending' && !discoverMode });
+    const popularQuery = usePopular('tv', page, { enabled: filter === 'popular' && !discoverMode });
+    const topRatedQuery = useTopRated('tv', page, { enabled: filter === 'top_rated' && !discoverMode });
+    const discoverQuery = useDiscoverByGenre('tv', selectedGenre, page, selectedLanguage, { enabled: discoverMode });
 
-    const activeQuery = selectedGenre
+    const activeQuery = discoverMode
         ? discoverQuery
         : filter === 'trending'
             ? trendingQuery
@@ -60,10 +64,10 @@ export default function TVShowsPage() {
     const shows = useMemo(() => {
         if (!data) return [];
 
-        if (filter === 'trending' && !selectedGenre) return Array.isArray(data) ? data : [];
+        if (filter === 'trending' && !discoverMode) return Array.isArray(data) ? data : [];
 
         return Array.isArray(data) ? data : (data.results || []);
-    }, [data, filter, selectedGenre]);
+    }, [data, filter, discoverMode]);
 
     // Accumulate shows for infinite scroll on small screens
     useEffect(() => {
@@ -110,7 +114,7 @@ export default function TVShowsPage() {
         isLoading,
     });
 
-    const isTrendingDisabled = !!selectedGenre;
+    const isTrendingDisabled = discoverMode;
 
     const getPageTitle = () => {
         if (filter === 'popular') return 'Popular TV Shows';
@@ -156,6 +160,15 @@ export default function TVShowsPage() {
                                 <span className="hidden sm:inline">{label}</span>
                             </button>
                         ))}
+                    </div>
+
+                    {/* Language Filter Scroll Row */}
+                    <div className="pt-3">
+                        <LanguageFilter
+                            value={selectedLanguage}
+                            disabled={isLoading}
+                            onChange={(c) => { setSelectedLanguage(c); setPage(1); setAllShows([]); if (filter === 'trending' && c) setFilter('popular'); }}
+                        />
                     </div>
 
                     {/* Genre Filter Scroll Row */}
