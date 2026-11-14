@@ -75,6 +75,7 @@ export async function PATCH(
                 ...(typeof body.hasMultiQuality === 'boolean' && { hasMultiQuality: body.hasMultiQuality }),
                 ...(typeof body.hasSubtitles === 'boolean' && { hasSubtitles: body.hasSubtitles }),
                 ...(typeof body.hasAutoplay === 'boolean' && { hasAutoplay: body.hasAutoplay }),
+                ...(body.subtitleParam !== undefined && { subtitleParam: body.subtitleParam || null }),
                 ...(Array.isArray(body.languages) && { languages: body.languages }),
                 ...(body.description !== undefined && { description: body.description }),
                 ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),

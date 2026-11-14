@@ -36,6 +36,7 @@ export function useProviderRanking<P extends { slug: string; languages?: string[
     activeIndex: number,
     loaded: boolean,
     lang?: string,
+    only?: string[], // restrict to these server slugs (language-verified servers)
 ) {
     const [data, setData] = useState<Rankings | null>(null);
     const [done, setDone] = useState(false);
@@ -65,8 +66,8 @@ export function useProviderRanking<P extends { slug: string; languages?: string[
     }, [providers, data]);
 
     const ranked = useMemo(
-        () => (done ? [...providers].sort((a, b) => tier(b, lang) - tier(a, lang) || stats[b.slug].score - stats[a.slug].score) : []),
-        [providers, stats, done, lang],
+        () => (done ? providers.filter((p) => !only || only.includes(p.slug)).sort((a, b) => tier(b, lang) - tier(a, lang) || stats[b.slug].score - stats[a.slug].score) : []),
+        [providers, stats, done, lang, only],
     );
 
     const activeSlug = ranked[activeIndex]?.slug;

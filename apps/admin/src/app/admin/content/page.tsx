@@ -40,6 +40,7 @@ interface ProviderFormData {
     isDefault: boolean;
     description?: string;
     languages?: string;
+    subtitleParam?: string;
     logoUrl?: string;
     homepage?: string;
     supportsImdb: boolean;
@@ -224,6 +225,7 @@ export default function ContentPage() {
         isDefault: false,
         description: '',
         languages: '',
+        subtitleParam: '',
         logoUrl: '',
         homepage: '',
         supportsImdb: false,
@@ -395,6 +397,7 @@ export default function ContentPage() {
             isDefault: false,
             description: '',
             languages: '',
+            subtitleParam: '',
             logoUrl: '',
             homepage: '',
             supportsImdb: false,
@@ -422,6 +425,7 @@ export default function ContentPage() {
                 isDefault: provider.isDefault,
                 description: provider.description || '',
                 languages: (provider.languages || []).join(', '),
+                subtitleParam: provider.subtitleParam || '',
                 logoUrl: provider.logoUrl || '',
                 homepage: provider.homepage || '',
                 supportsImdb: provider.supportsImdb,
@@ -680,6 +684,18 @@ export default function ContentPage() {
                                         onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
                                         className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-teal-500"
                                         placeholder="ISO codes, comma separated (e.g. hi, ta, te). Empty = unknown / multi-language"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Subtitle language URL param
+                                    </label>
+                                    <input
+                                        value={formData.subtitleParam ?? ''}
+                                        onChange={(e) => setFormData({ ...formData, subtitleParam: e.target.value })}
+                                        className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-teal-500"
+                                        placeholder="e.g. ds_lang (only if the provider documents one). Empty = none"
                                     />
                                 </div>
 

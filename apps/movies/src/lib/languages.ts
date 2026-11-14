@@ -21,3 +21,15 @@ export function titleLanguages(t: {
   const all = [t.original_language, ...(t.spoken_languages ?? []).map((l) => l.iso_639_1)];
   return [...new Set(all.filter((c): c is string => !!c && c !== 'xx'))];
 }
+
+/** Append the provider's documented default-subtitle param, e.g. ?ds_lang=hi. */
+export function withSubtitle(url: string | undefined, param?: string | null, lang?: string | null): string | undefined {
+  if (!url || !param || !lang) return url;
+  try {
+    const u = new URL(url);
+    u.searchParams.set(param, lang);
+    return u.toString();
+  } catch {
+    return url;
+  }
+}

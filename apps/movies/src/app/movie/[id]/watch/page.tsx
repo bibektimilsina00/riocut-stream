@@ -8,8 +8,11 @@ import { Star, Calendar, Clock, Loader2, Info, Server, Globe, Film, Users } from
 import Navigation from '@/components/Navigation';
 import { MediaCard } from '@/components/media-card';
 import Image from 'next/image';
-import { titleLanguages, langName } from '@/lib/languages';
+import { titleLanguages, langName, withSubtitle } from '@/lib/languages';
 import AudioLanguagePicker from '@/components/AudioLanguagePicker';
+import { useLangPrefs } from '@/lib/hooks/useLangPrefs';
+import SubtitlePicker from '@/components/SubtitlePicker';
+import { useTitleLanguages } from '@/lib/hooks/useTitleLanguages';
 import { useProviderRanking } from '@/lib/hooks/useProviderRanking';
 import { PageLoader } from '@riocut/ui/components/ui/loading-spinner';
 
@@ -18,6 +21,7 @@ interface VideoProvider {
   name: string;
   slug: string;
   languages?: string[];
+  subtitleParam?: string | null;
   quality: string;
   isDefault: boolean;
   movieTemplate: string;
@@ -52,9 +56,18 @@ export default function WatchMoviePage() {
   // Best server for THIS title first (crowd-ranked; admin order breaks ties).
   const [audioLang, setAudioLang] = useState<string | null>(null);
   const langs = useMemo(() => (movie ? titleLanguages(movie) : []), [movie]);
-  const lang = audioLang ?? langs[0];
+  const { prefs, update: updatePrefs } = useLangPrefs();
+  const { verified, report: reportHeard } = useTitleLanguages('movie', movieId);
+  // Viewer's remembered audio applies only where it's verified for this title; else original.
+  const pref = prefs.audio && prefs.audio !== 'original' && verified[prefs.audio]?.length ? prefs.audio : undefined;
+  const lang = audioLang ?? pref ?? langs[0];
+  // A verified dub shows ONLY the servers confirmed to carry it.
+  const verifiedSlugs = lang !== langs[0]
+    ? verified[lang]?.filter((s) => rawProviders.some((p) => p.slug === s))
+    : undefined;
+  const only = verifiedSlugs?.length ? verifiedSlugs : undefined;
   const { ranked: providers, flagOf } = useProviderRanking(
-    rawProviders, 'movie', movieId, currentSourceIndex, !isPlayerLoading, lang,
+    rawProviders, 'movie', movieId, currentSourceIndex, !isPlayerLoading, lang, only,
   );
 
   // Get similar movies from movie details
@@ -97,9 +110,10 @@ export default function WatchMoviePage() {
   }
 
   const currentSource = providers[currentSourceIndex];
-  const embedUrl = currentSource?.movieTemplate
+  const baseEmbedUrl = currentSource?.movieTemplate
     .replace(/\{\{tmdbId\}\}/g, movieId.toString())
     .replace(/\{tmdbId\}/g, movieId.toString());
+  const embedUrl = withSubtitle(baseEmbedUrl, currentSource?.subtitleParam, prefs.sub);
 
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -161,9 +175,19 @@ export default function WatchMoviePage() {
               </div>
 
               <AudioLanguagePicker
-                langs={langs}
+                original={langs[0]}
+                spoken={langs.slice(1)}
+                verified={verified}
                 value={lang}
-                onChange={(c) => { setAudioLang(c); setCurrentSourceIndex(0); setIsPlayerLoading(true); }}
+                providerSlug={providers[currentSourceIndex]?.slug}
+                onHeard={reportHeard}
+                onChange={(c) => { updatePrefs({ audio: c === langs[0] ? 'original' : c }); setAudioLang(c); setCurrentSourceIndex(0); setIsPlayerLoading(true); }}
+              />
+
+              <SubtitlePicker
+                value={prefs.sub}
+                onChange={(c) => { updatePrefs({ sub: c }); setIsPlayerLoading(true); }}
+                supported={!!providers[currentSourceIndex]?.subtitleParam}
               />
 
               {/* Server Buttons */}
@@ -184,6 +208,9 @@ export default function WatchMoviePage() {
                     >
                       <Server className="w-3.5 h-3.5" />
                       <span>{provider.name}</span>
+                      {!!provider.subtitleParam && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 leading-none">CC</span>
+                      )}
                       {!!provider.languages?.length && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 leading-none">{provider.languages.map(langName).join('/')}</span>
                       )}

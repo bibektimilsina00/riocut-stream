@@ -21,7 +21,7 @@ export default function LanguageFilter({
     <div className="pb-3 flex items-center gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
       <Languages className="w-5 h-5 text-gray-500 flex-shrink-0" />
       <button disabled={disabled} onClick={() => onChange(null)} className={chip(value === null)}>
-        All Languages
+        All original languages
       </button>
       {FILTER_LANGUAGES.map((code) => (
         <button key={code} disabled={disabled} onClick={() => onChange(code)} className={chip(value === code)}>

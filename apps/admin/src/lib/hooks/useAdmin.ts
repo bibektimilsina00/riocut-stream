@@ -33,6 +33,7 @@ export interface ContentSource {
     quality: string;
     description?: string | null;
     languages?: string[];
+    subtitleParam?: string | null;
     logoUrl?: string | null;
     homepage?: string | null;
     isEnabled: boolean;
