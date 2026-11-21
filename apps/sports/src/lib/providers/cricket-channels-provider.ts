@@ -44,6 +44,16 @@ const NETTV_URL_RE = /https:\/\/ott-nettv-\d+\.nettv\.com\.np\/iptvlivestream\/[
 // link1-3 (same DRM'd aiv-cdn manifests as our FC/FC3) or link7 (finalspot,
 // Referer-gated).
 const NPL_TV_DATA_URL = 'https://npl-tv.pages.dev/data.json';
+// NetTV's own permanent NPL simulcast slot: a fixed DASH path protected by an
+// embedded ClearKey instead of a short-lived wmsAuthSign token, so (unlike
+// NETTV_URL_RE below) it doesn't go stale. Verified live 2026-11-21 by
+// decrypting an actual frame (NPL "Summit Clash" scoreboard, Lumbini Lions v
+// Sudurpaschim Royals, matching ESPN's live fixture) — CORS open, same
+// `wtvplyrrr?manifest=&keyid=&key=` shape DashVideo already plays.
+const NETTV_DIRECT_NPL =
+    'https://yonotv.pages.dev/wtvplyrrr?manifest=' +
+    encodeURIComponent('https://ott-edge-mtdc04.nettv.com.np/npl/live_match3/index.mpd') +
+    '&keyid=b4d7fc89103597185058cc4c81a1800d&key=17062472ba2a3f1db709d3bb7761c936';
 
 type PpvStream = { id?: number; name?: string; tag?: string; iframe?: string; poster?: string };
 type PpvPayload = { streams?: Array<{ category?: string; streams?: PpvStream[] }> };
@@ -162,11 +172,10 @@ export class CricketChannelsProvider implements SportsProvider {
     /** NetTV, NP2 and Rumble are NPL-specific; FC/FC3 are FanCode's generic cricket channel (may show a different match). */
     private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null; np2: string | null; rumble: string | null }): MatchSource[] {
         const candidates = [
-            // FC first: confirmed (2026-11-09) to actually carry the live NPL
-            // feed right now — same manifest+ClearKey pair a third-party NPL
-            // site uses as its own working stream. Rumble is next when it's
-            // not broken upstream; NetTV/NP2's tokens have been going stale
-            // for days, so they're listed last as fallbacks.
+            // NetTV's direct ClearKey DASH slot first: confirmed (2026-11-21)
+            // to actually carry the live NPL match. Everything else here is a
+            // fallback of unverified/known-stale reliability.
+            { url: NETTV_DIRECT_NPL, label: 'NPL Live (NetTV)' },
             clean.rumble && { url: clean.rumble, label: 'NPL Live' },
             { url: clean.FC, label: 'FanCode Live (FC)' },
             { url: clean.FC3, label: 'FanCode 3 (FC3)' },

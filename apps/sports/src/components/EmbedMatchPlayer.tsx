@@ -111,16 +111,13 @@ export default function EmbedMatchPlayer({
     const dash = dashOf(activeSrc);
     const activeKey = active ? sourceKeyOf(active) : '';
 
-    // ponytail: every known NPL source is currently broken or wrong —
-    // verified 2026-11-09 by decrypting actual video frames: FC and FC3
-    // (FanCode's leaked-ClearKey manifests) show FanCode's own "match has
-    // ended" placeholder, a third manifest shows an unrelated football
-    // match, Rumble is dead upstream, NetTV's token is stale, NP2 shows
-    // offline. No source is reliable enough to let play; banner stays up
-    // for every NPL match until one actually is. Drop this override once a
-    // real source is confirmed working again.
+    // 2026-11-21: NetTV's direct ClearKey DASH slot (NPL Live (NetTV),
+    // highest-priority NPL source) verified playing the actual live match by
+    // decrypting a frame — banner only comes back once every source,
+    // including that one, has actually failed.
     const isNpl = /npl/i.test(effectiveMatchKey);
-    const showNplFallback = isNpl;
+    const allExhausted = visible.length > 0 && visible.every((s) => failed.has(sourceKeyOf(s)));
+    const showNplFallback = isNpl && allExhausted;
 
     const advance = useCallback((opts: { report: 'auto-failed' | 'stall' | null }) => {
         const nextFailed = new Set(failed).add(activeKey);
