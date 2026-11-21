@@ -156,10 +156,7 @@ export class CricketChannelsProvider implements SportsProvider {
             if (table.has('FC')) out.FC = table.get('FC')!;
             if (table.has('FC3')) out.FC3 = table.get('FC3')!;
             out.nettv = linkHtml.match(NETTV_URL_RE)?.[0] ?? null;
-            // FC/FC3 are FanCode's generic live-cricket channel, not an NPL
-            // feed — whatever FanCode happens to be airing (Ranji Trophy,
-            // domestic T20s...) when another match overlaps NPL's slot. NP2
-            // is Yono's own Nepal-tagged source, a distinct stream.
+            // NP2 is Yono's own Nepal-tagged source, a distinct stream.
             const np2 = table.get('NP2');
             out.np2 = np2 ? playableFrom(np2)?.url ?? null : null;
         }
@@ -169,18 +166,24 @@ export class CricketChannelsProvider implements SportsProvider {
         return out;
     }
 
-    /** NetTV, NP2 and Rumble are NPL-specific; FC/FC3 are FanCode's generic cricket channel (may show a different match). */
+    /**
+     * NetTV direct + NP2 + Rumble are NPL-specific. FC/FC3 are FanCode's
+     * generic cricket channel — confirmed repeatedly (2026-11-09, 2026-11-21)
+     * to silently show whatever FanCode happens to be airing instead (a
+     * football match, FanCode's own "match ended" placeholder, MotoGP), so
+     * they're kept as manually-labeled "Server 1/2" fallbacks, not claimed to
+     * be NPL, and listed last behind the sources that actually are.
+     */
     private nplSourceList(id: string, clean: { FC: string; FC3: string; nettv: string | null; np2: string | null; rumble: string | null }): MatchSource[] {
         const candidates = [
             // NetTV's direct ClearKey DASH slot first: confirmed (2026-11-21)
-            // to actually carry the live NPL match. Everything else here is a
-            // fallback of unverified/known-stale reliability.
+            // to actually carry the live NPL match.
             { url: NETTV_DIRECT_NPL, label: 'NPL Live (NetTV)' },
             clean.rumble && { url: clean.rumble, label: 'NPL Live' },
-            { url: clean.FC, label: 'FanCode Live (FC)' },
-            { url: clean.FC3, label: 'FanCode 3 (FC3)' },
             clean.nettv && { url: clean.nettv, label: 'NetTV Live' },
             clean.np2 && { url: clean.np2, label: 'Nepal Live (NP2)' },
+            { url: clean.FC, label: 'Server 1' },
+            { url: clean.FC3, label: 'Server 2' },
         ].filter((c): c is { url: string; label: string } => !!c);
         return candidates.map((c, i) => this.source(id, c.url, c.label, i + 1));
     }
